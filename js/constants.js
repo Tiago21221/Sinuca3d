@@ -35,7 +35,7 @@ export const MAX_SUBSTEPS = 16;
 export const SLEEP_SPEED = 0.018;
 export const SETTLE_FRAMES = 18;
 
-export const MAX_SHOT_SPEED = 7.2;
+export const MAX_SHOT_SPEED = 8;
 export const CUE_MAX_PULL = 0.42;
 
 /** Cores oficiais aproximadas das bolas 1–15. */
