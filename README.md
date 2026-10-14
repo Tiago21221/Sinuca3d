@@ -66,7 +66,7 @@ Uma branca e três bolas objetivas (1, 2 e 3). Vence quem encaçapar a última d
 
 **Computador:** segure o botão esquerdo e arraste na horizontal para girar a mira; puxe para trás para definir a força e empurre para frente para tacar. Soltar depois de puxar também executa a tacada. A barra de força e o botão Tacada continuam disponíveis. A/D ajusta a mira, W/S a força, Espaço executa a tacada, setas movimentam a câmera, Q/E ajusta o zoom, C alterna o ângulo, R reinicia a câmera e Esc pausa. Na bola na mão, clique no pano para posicionar e confirmar automaticamente; pelo teclado, use as setas e Enter.
 
-**Celular/tablet:** arraste horizontalmente sobre a mesa para mirar sem disparar; ajuste a força pelo controle deslizante e toque em **Tacada** para jogar. Os botões laterais controlam a câmera e permitem alternar para tela cheia. Na bola na mão, toque na mesa para posicionar. Gestos de zoom do navegador estão bloqueados no canvas (`touch-action: none` e `user-scalable=no`).
+**Celular/tablet:** arraste horizontalmente sobre a mesa para mirar sem disparar. O centro da mesa fica livre: toque em **Controles** para abrir o painel lateral, ajuste a força pelo slider vertical e toque em **Tacada** para jogar. O mesmo painel reúne efeito e câmera; os botões **Tela cheia** e **Controles** permanecem acessíveis na borda inferior. Na bola na mão, toque na mesa para posicionar. Gestos de zoom do navegador estão bloqueados no canvas (`touch-action: none` e `user-scalable=no`).
 
 ## Estatísticas
 

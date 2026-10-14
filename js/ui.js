@@ -63,6 +63,11 @@ export class UI {
       }
       const fs = e.target.closest("[data-fullscreen]");
       if (fs) this.toggleFullscreen();
+      const controlsToggle = e.target.closest("[data-controls-toggle]");
+      if (controlsToggle) {
+        const panel = this.root.querySelector("#mobileControlsPanel");
+        this._setMobileControlsOpen(!panel?.classList.contains("open"));
+      }
       const shoot = e.target.closest("[data-shoot]");
       if (shoot) this.game?.shoot();
       const historyToggle = e.target.closest("[data-history-toggle]");
@@ -253,6 +258,7 @@ export class UI {
       ?.setAttribute("aria-label", this.tx("history"));
     this.root.querySelector(".history-close")
       ?.setAttribute("aria-label", this.tx("historyClose"));
+    this._setMobileControlsOpen(false);
     this._syncFullscreenButton();
     const spinBall = this.root.querySelector("#spinBall");
     if (spinBall) {
@@ -268,6 +274,7 @@ export class UI {
     const hud = this.root.querySelector("#hud");
     const playing = id === "screen-game";
     if (hud) hud.hidden = !playing;
+    if (!playing) this._setMobileControlsOpen(false);
     if (id === "screen-stats") this.renderStats();
     if (id === "screen-play") this._toggleModeExtras();
   }
@@ -429,6 +436,20 @@ export class UI {
     if (bar) bar.classList.toggle("disabled", !on);
     const spinBall = this.root.querySelector("#spinBall");
     if (spinBall) spinBall.disabled = !on;
+  }
+
+  _setMobileControlsOpen(open) {
+    const panel = this.root.querySelector("#mobileControlsPanel");
+    if (!panel) return;
+    panel.classList.toggle("open", open);
+    this.root.querySelectorAll("[data-controls-toggle]").forEach((button) => {
+      button.setAttribute("aria-expanded", String(open));
+      const label = this.tx(open ? "closeControls" : "controls");
+      button.setAttribute("aria-label", label);
+      button.title = label;
+      const text = button.querySelector("[data-i18n]");
+      if (text) text.textContent = label;
+    });
   }
 
   _setSpinFromPointer(element, event) {

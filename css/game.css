@@ -429,3 +429,152 @@
 @media (prefers-reduced-motion: reduce) {
   .player-card, .aim-dock, #toast { transition: none; }
 }
+
+.mobile-controls-panel { display: contents; }
+.mobile-controls-heading,
+.mobile-controls-actions { display: none; }
+
+@media (max-width: 900px) {
+  .mobile-controls-panel {
+    position: absolute;
+    z-index: 3;
+    right: max(8px, env(safe-area-inset-right));
+    bottom: calc(64px + env(safe-area-inset-bottom));
+    display: none;
+    grid-template-columns: minmax(0, 1fr);
+    justify-items: stretch;
+    gap: 10px;
+    width: min(176px, calc(100vw - 16px));
+    max-height: calc(100dvh - env(safe-area-inset-top) - 150px);
+    padding: 10px;
+    overflow-x: hidden;
+    overflow-y: auto;
+    border: 1px solid rgba(235, 221, 184, 0.2);
+    border-radius: 17px;
+    background: rgba(10, 16, 12, 0.97);
+    box-shadow: 0 14px 40px rgba(0, 0, 0, 0.46);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+  }
+
+  .mobile-controls-panel.open {
+    display: grid;
+    animation: controls-enter 150ms ease both;
+  }
+  .mobile-controls-panel[hidden] { display: none !important; }
+  @keyframes controls-enter {
+    from { opacity: 0; transform: translateY(5px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .mobile-controls-heading {
+    display: flex;
+    min-height: 36px;
+    align-items: center;
+    justify-content: space-between;
+    padding-left: 4px;
+    color: #e8d39b;
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+  .mobile-controls-close { width: 40px; min-width: 40px; min-height: 40px; height: 40px; padding: 0; font-size: 1.2rem; }
+
+  .mobile-controls-panel .control-console {
+    position: static;
+    display: block;
+    width: 100%;
+    min-width: 0;
+    transform: none;
+  }
+  .mobile-controls-panel .aim-dock {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 9px;
+    padding: 9px;
+    border-radius: 12px;
+  }
+  .mobile-controls-panel .power-control { justify-items: center; gap: 5px; }
+  .mobile-controls-panel .power-heading { width: 100%; justify-content: center; gap: 8px; font-size: 0.68rem; }
+  .mobile-controls-panel #powerSlider {
+    width: 44px;
+    height: 124px;
+    writing-mode: vertical-lr;
+    direction: rtl;
+    touch-action: pan-y;
+  }
+  .mobile-controls-panel .shoot { width: 100%; min-height: 48px; }
+  .mobile-controls-panel .keyboard-hint { display: none; }
+
+  .mobile-controls-panel .spin-dock {
+    position: static;
+    display: flex;
+    width: 100%;
+    min-height: 60px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 7px 12px;
+    border-radius: 12px;
+    font-size: 0.61rem;
+  }
+  .mobile-controls-panel .spin-ball { flex: 0 0 46px; width: 46px; height: 46px; }
+  .mobile-controls-panel .cam-dock {
+    position: static;
+    display: grid;
+    grid-template-columns: repeat(2, 44px);
+    justify-content: center;
+    gap: 5px;
+    width: 100%;
+    padding: 8px;
+    transform: none;
+    border-radius: 12px;
+  }
+  .mobile-controls-panel .cam-dock button { min-width: 44px; min-height: 44px; }
+  .mobile-controls-panel .cam-dock .fullscreen-btn { display: none; }
+
+  .mobile-controls-actions {
+    position: absolute;
+    z-index: 4;
+    right: max(8px, env(safe-area-inset-right));
+    bottom: max(10px, env(safe-area-inset-bottom));
+    display: flex;
+    align-items: center;
+    gap: 7px;
+  }
+  .mobile-controls-toggle {
+    display: inline-flex;
+    min-width: 112px;
+    min-height: 48px;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    padding: 8px 12px;
+    border-radius: 13px;
+    font-size: 0.75rem;
+  }
+  .mobile-controls-toggle > span:first-child { font-size: 1rem; }
+  .mobile-fullscreen-btn {
+    display: grid;
+    width: 48px;
+    min-width: 48px;
+    min-height: 48px;
+    height: 48px;
+    place-items: center;
+    padding: 0;
+    border-radius: 13px;
+    font-size: 1.2rem;
+  }
+  .mobile-fullscreen-btn[aria-pressed="true"] { border-color: rgba(214,183,112,0.58); color: #f0d792; }
+}
+
+@media (max-width: 900px) and (orientation: landscape) {
+  .mobile-controls-panel { bottom: calc(64px + env(safe-area-inset-bottom)); max-height: calc(100dvh - env(safe-area-inset-top) - 80px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mobile-controls-panel.open { animation: none; }
+}
