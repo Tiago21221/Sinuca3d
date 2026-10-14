@@ -11,8 +11,20 @@
 .check-row { display: flex; align-items: center; gap: 10px; }
 .check-row input { width: 18px; height: 18px; accent-color: var(--gold); }
 .setup-extra { margin-top: 12px; display: grid; gap: 8px; }
+.setup-extra[hidden] { display: none; }
 .group-pick { display: flex; gap: 8px; }
 .group-pick button { flex: 1; }
+.room-code {
+  padding: 12px;
+  border: 1px solid rgba(212,179,106,0.35);
+  border-radius: 12px;
+  color: var(--gold);
+  font-size: 1.8rem;
+  font-weight: 800;
+  letter-spacing: 0.25em;
+  text-align: center;
+}
+#roomCodeInput { text-transform: lowercase; letter-spacing: 0.15em; }
 #pauseMenu, #gameOver {
   position: absolute; inset: 0; z-index: 8;
   display: grid; place-items: center;

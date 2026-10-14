@@ -8,12 +8,14 @@ import { loadStats, resetStats, winRate } from "./stats.js";
 import { saveSettings } from "./settings.js";
 
 export class UI {
-  constructor({ root, settings, audio, onStart, onPauseAction }) {
+  constructor({ root, settings, audio, onStart, onPauseAction, onOnlineAction, onOnlineCancel }) {
     this.root = root;
     this.settings = settings;
     this.audio = audio;
     this.onStart = onStart;
     this.onPauseAction = onPauseAction;
+    this.onOnlineAction = onOnlineAction;
+    this.onOnlineCancel = onOnlineCancel;
     this.lang = settings.language;
     this.aimDir = { x: 1, z: 0 };
     this.spin = { x: 0, y: 0 };
@@ -46,6 +48,10 @@ export class UI {
       }
       const start = e.target.closest("[data-start]");
       if (start) this._openRulesThenStart();
+      const onlineAction = e.target.closest("[data-online-action]");
+      if (onlineAction) this._handleOnlineAction(onlineAction.dataset.onlineAction);
+      if (e.target.closest("#cancelOnline")) this.onOnlineCancel?.();
+      if (e.target.closest("#copyRoomCode")) this._copyRoomCode();
       const pause = e.target.closest("[data-pause-action]");
       if (pause) this.onPauseAction?.(pause.dataset.pauseAction);
       const cat = e.target.closest("[data-group]");
@@ -81,6 +87,7 @@ export class UI {
     });
     this.root.querySelector("#playerSelect")?.addEventListener("change", (e) => {
       this.setup.vsAi = e.target.value === "ai";
+      this._togglePlayerExtras();
     });
     this.root.querySelector("#diffSelect")?.addEventListener("change", (e) => {
       this.setup.difficulty = e.target.value;
@@ -129,6 +136,56 @@ export class UI {
     const bol = this.root.querySelector("#bolinhoSetup");
     if (even) even.hidden = this.setup.mode !== MODES.EVEN_ODD;
     if (bol) bol.hidden = this.setup.mode !== MODES.BOLINHO;
+  }
+
+  _togglePlayerExtras() {
+    const online = this.root.querySelector("#onlineSetup");
+    const start = this.root.querySelector("[data-start]");
+    const isOnline = this.root.querySelector("#playerSelect")?.value === "online";
+    if (online) online.hidden = !isOnline;
+    if (start) start.hidden = isOnline;
+    this.setup.vsAi = this.root.querySelector("#playerSelect")?.value === "ai";
+  }
+
+  _handleOnlineAction(action) {
+    if (action === "host") {
+      this._openRulesThenStart("host");
+      return;
+    }
+    const code = this.root.querySelector("#roomCodeInput")?.value.trim().toLowerCase() || "";
+    if (!/^[2-9a-hj-np-z]{6}$/.test(code)) {
+      this.showMessage(this.tx("invalidRoomCode"));
+      return;
+    }
+    this.onOnlineAction?.({ action: "join", code });
+  }
+
+  showOnlineLobby({ hosting, code = "" }) {
+    const roomCode = this.root.querySelector("#onlineRoomCode");
+    const copyButton = this.root.querySelector("#copyRoomCode");
+    if (roomCode) {
+      roomCode.textContent = code;
+      roomCode.hidden = !hosting;
+    }
+    if (copyButton) copyButton.hidden = !hosting;
+    this.setOnlineStatus(hosting ? "onlineWaiting" : "onlineConnecting");
+    this.showScreen("screen-online");
+  }
+
+  setOnlineStatus(key, detail = "") {
+    const status = this.root.querySelector("#onlineStatus");
+    if (status) status.textContent = `${this.tx(key)}${detail ? `: ${detail}` : ""}`;
+  }
+
+  async _copyRoomCode() {
+    const code = this.root.querySelector("#onlineRoomCode")?.textContent;
+    if (!code) return;
+    try {
+      await navigator.clipboard.writeText(code);
+      this.setOnlineStatus("codeCopied");
+    } catch (error) {
+      this.setOnlineStatus("onlineCopyError", error.message);
+    }
   }
 
   _readSettings() {
@@ -212,7 +269,7 @@ export class UI {
     if (id === "screen-play") this._toggleModeExtras();
   }
 
-  _openRulesThenStart() {
+  _openRulesThenStart(onlineAction = null) {
     const list = this.root.querySelector("#rulesList");
     list.innerHTML = "";
     const lang = this.lang;
@@ -234,7 +291,14 @@ export class UI {
     go.onclick = () => {
       this.audio.click();
       this.showScreen("screen-game");
-      this.onStart({ ...this.setup });
+      if (onlineAction) {
+        this.onOnlineAction?.({
+          action: onlineAction,
+          config: { ...this.setup, vsAi: false, multiplayer: true, multiplayerHost: true, localPlayer: 0 },
+        });
+      } else {
+        this.onStart({ ...this.setup });
+      }
     };
   }
 

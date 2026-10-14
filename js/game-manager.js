@@ -52,11 +52,19 @@ export class GameManager {
     this.aiThinking = false;
     this.placeLegal = true;
     this.kitchenOnly = false;
+    this.localPlayer = null;
+    this.networkConnected = false;
+    this.waitingForNetwork = false;
+    this.onNetworkEvent = null;
+    this.winner = null;
   }
 
   startMatch(config) {
     this.clearBalls();
     this.config = config;
+    this.localPlayer = config.multiplayer ? config.localPlayer : null;
+    this.waitingForNetwork = false;
+    this.winner = null;
     this.physics.pocketCenters = pocketPositions();
     this.history = [];
     this.run = 0;
@@ -69,7 +77,7 @@ export class GameManager {
       { name: config.vsAi ? this.ui.tx("you") : this.ui.tx("player1"), isAi: false, fouls: 0 },
       {
         name: config.vsAi ? this.ui.tx("computer") : this.ui.tx("player2"),
-        isAi: Boolean(config.vsAi),
+        isAi: Boolean(config.vsAi && !config.multiplayer),
         fouls: 0,
       },
     ];
@@ -86,6 +94,8 @@ export class GameManager {
     this._refreshHud("breakShot");
     this.cameraRig.reset();
     if (this.players[this.modeState.currentPlayer].isAi) this._queueAi();
+    this.ui.setControlsEnabled(this.phase === "aim" && this.isLocalTurn());
+    this._publishNetworkState();
   }
 
   _rack() {
@@ -160,7 +170,7 @@ export class GameManager {
     }
 
     const cueMesh = this.ballMeshes.get(0);
-    const aiming = this.phase === "aim" && !this.aiThinking;
+    const aiming = this.phase === "aim" && !this.aiThinking && this.isLocalTurn();
     if (cueMesh) {
       const dir = new THREE.Vector3(this.ui.aimDir.x, 0, this.ui.aimDir.z);
       this.cue.setAim(dir);
@@ -211,9 +221,64 @@ export class GameManager {
   }
 
   shoot(pulled = 0) {
-    if (this.phase !== "aim" || this.aiThinking) return;
+    if (this.phase !== "aim" || this.aiThinking || !this.isLocalTurn()) return;
     const dir = new THREE.Vector3(this.ui.aimDir.x, 0, this.ui.aimDir.z).normalize();
-    this._fire(dir, this.ui.power, pulled || this.cuePull, this.ui.spin);
+    const shot = {
+      direction: { x: dir.x, z: dir.z },
+      power: this.ui.power,
+      pulled: pulled || this.cuePull,
+      spin: { ...this.ui.spin },
+    };
+    if (this.config.multiplayer && !this.config.multiplayerHost) {
+      this.waitingForNetwork = true;
+      this.ui.setControlsEnabled(false);
+      this.onNetworkEvent?.("shot-request", shot);
+      return;
+    }
+    this._fire(dir, shot.power, shot.pulled, shot.spin);
+    if (this.config.multiplayer) this.onNetworkEvent?.("shot", { shooter: this.localPlayer, shot });
+  }
+
+  isLocalTurn() {
+    return (
+      !this.aiThinking &&
+      !this.waitingForNetwork &&
+      (!this.config?.multiplayer ||
+        (this.networkConnected && this.modeState?.currentPlayer === this.localPlayer))
+    );
+  }
+
+  playNetworkShot(shot, shooter) {
+    if (
+      !this.config?.multiplayer ||
+      this.phase !== "aim" ||
+      shooter !== this.modeState.currentPlayer ||
+      !Number.isInteger(shooter) ||
+      !shot ||
+      !Number.isFinite(shot.direction?.x) ||
+      !Number.isFinite(shot.direction?.z) ||
+      !Number.isFinite(shot.power) ||
+      shot.power < 0.08 ||
+      shot.power > 1 ||
+      Math.hypot(shot.direction.x, shot.direction.z) < 0.5 ||
+      !Number.isFinite(shot.spin?.x) ||
+      !Number.isFinite(shot.spin?.y) ||
+      Math.abs(shot.spin.x) > 1 ||
+      Math.abs(shot.spin.y) > 1 ||
+      (shot.pulled != null &&
+        (!Number.isFinite(shot.pulled) || shot.pulled < 0 || shot.pulled > CUE_MAX_PULL))
+    ) {
+      return false;
+    }
+    this.waitingForNetwork = false;
+    this._fire(
+      new THREE.Vector3(shot.direction.x, 0, shot.direction.z),
+      shot.power,
+      Number.isFinite(shot.pulled) ? shot.pulled : 0,
+      { x: shot.spin.x, y: shot.spin.y }
+    );
+    if (this.config.multiplayerHost) this.onNetworkEvent?.("shot", { shooter, shot });
+    return true;
   }
 
   _fire(dir, power, pulled = 0, spin = { x: 0, y: 0 }) {
@@ -314,6 +379,7 @@ export class GameManager {
 
     if (pack.winner != null) {
       this._finish(pack.winner);
+      this._publishNetworkState();
       return;
     }
 
@@ -321,6 +387,7 @@ export class GameManager {
       this.kitchenOnly = this.modeState && this.history.length <= 1;
       this._beginBallInHand();
       this._refreshHud(pack.messageKey);
+      this._publishNetworkState();
       return;
     }
 
@@ -328,7 +395,8 @@ export class GameManager {
     this.cameraRig.clearFollow();
     this._refreshHud(pack.messageKey);
     if (this.players[this.modeState.currentPlayer].isAi) this._queueAi();
-    else this.ui.setControlsEnabled(true);
+    else this.ui.setControlsEnabled(this.isLocalTurn());
+    this._publishNetworkState();
   }
 
   _spot(number) {
@@ -363,17 +431,53 @@ export class GameManager {
 
   confirmPlace() {
     if (this.phase !== "place" || !this.placeLegal) return;
+    if (!this.isLocalTurn()) return;
+    if (this.config.multiplayer && !this.config.multiplayerHost) {
+      const cue = this.physics.bodies.get(0);
+      if (!cue) return;
+      this.waitingForNetwork = true;
+      this.onNetworkEvent?.("place-request", { x: cue.position.x, z: cue.position.z });
+      return;
+    }
     this.phase = "aim";
     this.ui.setBallInHand(false, false);
-    this.ui.setControlsEnabled(true);
+    this.ui.setControlsEnabled(this.isLocalTurn());
+    this._publishNetworkState();
   }
 
   moveCueTo(x, z) {
+    if (!this.isLocalTurn()) return;
+    this._moveCueTo(x, z);
+  }
+
+  _moveCueTo(x, z) {
     if (this.phase !== "place") return;
     const clamped = this._clampPlace(x, z);
     this.placeLegal = !this.physics.overlaps(clamped.x, clamped.z, 0) && this._inTable(clamped.x, clamped.z);
     if (this.kitchenOnly && clamped.x > KITCHEN_MAX_X) this.placeLegal = false;
     if (this.placeLegal) this.physics.placeCue(clamped.x, clamped.z);
+  }
+
+  placeNetworkCue(x, z) {
+    if (
+      !this.config?.multiplayer ||
+      !this.config.multiplayerHost ||
+      this.phase !== "place" ||
+      this.modeState.currentPlayer !== 1 ||
+      !Number.isFinite(x) ||
+      !Number.isFinite(z)
+    ) {
+      return false;
+    }
+    this._moveCueTo(x, z);
+    if (this.placeLegal) {
+      this.phase = "aim";
+      this.ui.setBallInHand(false, false);
+      this.ui.setControlsEnabled(false);
+      this._publishNetworkState();
+    }
+    else this._publishNetworkState();
+    return true;
   }
 
   _clampPlace(x, z) {
@@ -431,18 +535,20 @@ export class GameManager {
 
   _finish(winnerIndex) {
     this.phase = "over";
-    const winForP1 = winnerIndex === 0;
+    this.winner = winnerIndex;
+    const localWin = winnerIndex === (this.localPlayer ?? 0);
     recordMatch(this.config.mode, {
-      win: winForP1,
+      win: this.config.multiplayer ? localWin : winnerIndex === 0,
       ballsPocketed: this.matchBalls,
       fouls: this.matchFouls,
       run: this.run,
     });
-    if (this.config.vsAi && !winForP1) this.audio.lose();
+    if (this.config.vsAi && !localWin) this.audio.lose();
+    else if (this.config.multiplayer && !localWin) this.audio.lose();
     else this.audio.win();
     this.ui.showGameOver({
       winner: this.players[winnerIndex].name,
-      youWin: winForP1,
+      youWin: localWin,
       vsAi: this.config.vsAi,
     });
     this._refreshHud("victory");
@@ -461,6 +567,103 @@ export class GameManager {
 
   restart() {
     if (!this.config) return;
+    if (this.config.multiplayer && !this.config.multiplayerHost) {
+      this.waitingForNetwork = true;
+      this.onNetworkEvent?.("restart-request");
+      return;
+    }
     this.startMatch(this.config);
+  }
+
+  _publishNetworkState() {
+    if (!this.config?.multiplayer || !this.config.multiplayerHost) return;
+    this.onNetworkEvent?.("state", this.getNetworkState());
+  }
+
+  getNetworkState() {
+    return {
+      phase: this.phase,
+      balls: [...this.physics.bodies].map(([number, body]) => ({
+        number,
+        x: body.position.x,
+        z: body.position.z,
+      })),
+      modeState: JSON.parse(JSON.stringify(this.modeState)),
+      players: this.players.map(({ name, isAi, fouls }) => ({ name, isAi, fouls })),
+      history: this.history.map((entry) => ({ ...entry, potted: [...(entry.potted || [])] })),
+      run: this.run,
+      matchBalls: this.matchBalls,
+      matchFouls: this.matchFouls,
+      kitchenOnly: this.kitchenOnly,
+      placeLegal: this.placeLegal,
+      winner: this.winner,
+    };
+  }
+
+  applyNetworkState(state) {
+    const validBalls =
+      Array.isArray(state?.balls) &&
+      state.balls.length > 0 &&
+      state.balls.every(
+        (ball) =>
+          Number.isInteger(ball.number) &&
+          Number.isFinite(ball.x) &&
+          Number.isFinite(ball.z)
+      );
+    if (
+      !state ||
+      !["aim", "place", "over"].includes(state.phase) ||
+      !validBalls ||
+      !state.balls.some((ball) => ball.number === 0) ||
+      !state.modeState ||
+      ![0, 1].includes(state.modeState.currentPlayer) ||
+      !Array.isArray(state.players) ||
+      state.players.length !== 2
+    ) {
+      return false;
+    }
+    this.clearBalls();
+    for (const anim of this.pocketAnims) {
+      this.scene.remove(anim.mesh);
+      anim.mesh.geometry.dispose();
+      anim.mesh.material.dispose?.();
+    }
+    this.pocketAnims = [];
+    for (const ball of state.balls) {
+      this._spawnBall(ball.number, ball.x, ball.z);
+    }
+    this.physics.accumulator = 0;
+    this.physics.resetShotTracking();
+    this.physics.forceSleepAll();
+    this.modeState = JSON.parse(JSON.stringify(state.modeState));
+    this.players = state.players.map((player) => ({
+      name: String(player.name),
+      isAi: false,
+      fouls: Number.isFinite(player.fouls) ? player.fouls : 0,
+    }));
+    this.history = Array.isArray(state.history) ? state.history : [];
+    this.phase = state.phase;
+    this.run = Number.isFinite(state.run) ? state.run : 0;
+    this.matchBalls = Number.isFinite(state.matchBalls) ? state.matchBalls : 0;
+    this.matchFouls = Number.isFinite(state.matchFouls) ? state.matchFouls : 0;
+    this.kitchenOnly = Boolean(state.kitchenOnly);
+    this.placeLegal = Boolean(state.placeLegal);
+    this.winner = Number.isInteger(state.winner) ? state.winner : null;
+    this.stroke = null;
+    this.shotPocketed = [];
+    this.waitingForNetwork = false;
+    this.cameraRig.clearFollow();
+    this.ui.hideGameOver();
+    this.ui.setBallInHand(this.phase === "place", this.kitchenOnly);
+    this.ui.setControlsEnabled(this.phase === "aim" && this.isLocalTurn());
+    if (this.phase === "over" && this.winner != null) {
+      this.ui.showGameOver({
+        winner: this.players[this.winner].name,
+        youWin: this.winner === this.localPlayer,
+        vsAi: false,
+      });
+    }
+    this._refreshHud(this.phase === "over" ? "victory" : "turnPassed");
+    return true;
   }
 }

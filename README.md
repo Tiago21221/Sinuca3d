@@ -9,6 +9,7 @@ Jogo de sinuca 3D jogável no Chrome, Edge e Firefox, sem instalar engine. Quatr
 - [cannon-es](https://github.com/pmndrs/cannon-es) para colisões, atrito e rotação
 - LocalStorage para configurações e estatísticas
 - Web Audio API para efeitos e trilha sintetizados (sem amostras protegidas)
+- WebRTC com PeerJS para partidas online entre dois navegadores
 
 Versões em `package.json`. Após `npm install`, as bibliotecas ficam em `node_modules` e o jogo pode ser empacotado com `npm run build` para uso local.
 
@@ -70,6 +71,10 @@ Uma branca e três bolas objetivas (1, 2 e 3). Vence quem encaçapar a última d
 ## Estatísticas
 
 Ficam só neste navegador, via LocalStorage. Não são enviadas nem sincronizadas entre aparelhos.
+
+## Partida online
+
+Em **Jogar**, selecione **2 jogadores (dispositivos diferentes)**. O anfitrião escolhe a modalidade, cria uma sala e compartilha o código de seis caracteres; o outro jogador informa esse código no próprio aparelho. A conexão da partida é ponto a ponto via WebRTC. O PeerJS Cloud é usado apenas para sinalizar a conexão, portanto os dois aparelhos precisam estar online; redes com bloqueios de WebRTC podem impedir a conexão. O jogo e a publicação continuam estáticos no GitHub Pages, sem servidor próprio.
 
 ## Estrutura
 

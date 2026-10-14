@@ -7,7 +7,8 @@ import { CameraRig } from "./camera.js";
 import { Controls } from "./controls.js";
 import { GameManager } from "./game-manager.js";
 import { UI } from "./ui.js";
-import { TABLE_HEIGHT } from "./constants.js";
+import { createRoomCode, MultiplayerSession } from "./multiplayer.js";
+import { MODES, TABLE_HEIGHT } from "./constants.js";
 
 const settings = loadSettings();
 const audio = new GameAudio();
@@ -28,16 +29,117 @@ if (!renderer) {
   const cameraRig = new CameraRig(camera, settings);
   cameraRig.setQualityDistance(settings.cameraDistance);
 
+  let network = null;
   const ui = new UI({
     root: document.getElementById("app"),
     settings,
     audio,
     onStart: (config) => startMatch(config),
     onPauseAction: (action) => handlePause(action),
+    onOnlineAction: (action) => startOnline(action),
+    onOnlineCancel: () => {
+      network?.close();
+      network = null;
+      ui.showScreen("screen-play");
+    },
   });
 
   const game = new GameManager({ scene, cameraRig, audio, settings, ui });
   ui.game = game;
+  game.onNetworkEvent = (type, payload) => {
+    if (type === "shot-request") sendNetwork({ type, shot: payload });
+    if (type === "place-request") sendNetwork({ type, position: payload });
+    if (type === "restart-request") sendNetwork({ type });
+    if (type === "shot" || type === "state") sendNetwork({ type, ...payload });
+  };
+
+  function sendNetwork(message) {
+    if (!network) return;
+    try {
+      network.send(message);
+    } catch (error) {
+      game.networkConnected = false;
+      ui.showMessage(`${ui.tx("onlineConnectionError")}: ${error.message}`, 5000);
+    }
+  }
+
+  function receiveNetwork(message) {
+    if (!message || typeof message !== "object" || typeof message.type !== "string") return;
+    if (message.type === "join" && network?.role === "host" && !game.config) {
+      const config = { ...network.matchConfig, multiplayerHost: true, localPlayer: 0, vsAi: false };
+      sendNetwork({ type: "match-config", config });
+      game.networkConnected = true;
+      startMatch(config);
+      return;
+    }
+    if (
+      message.type === "match-config" &&
+      network?.role === "join" &&
+      !game.config &&
+      Object.values(MODES).includes(message.config?.mode)
+    ) {
+      game.networkConnected = true;
+      startMatch({
+        ...message.config,
+        multiplayer: true,
+        multiplayerHost: false,
+        localPlayer: 1,
+        vsAi: false,
+      });
+      return;
+    }
+    if (message.type === "shot-request" && network?.role === "host") {
+      if (game.modeState?.currentPlayer === 1) {
+        if (!game.playNetworkShot(message.shot, 1) && game.phase === "aim") {
+          sendNetwork({ type: "state", ...game.getNetworkState() });
+        }
+      }
+      return;
+    }
+    if (message.type === "shot" && network?.role === "join") {
+      game.playNetworkShot(message.shot, message.shooter);
+      return;
+    }
+    if (message.type === "place-request" && network?.role === "host") {
+      const position = message.position;
+      if (!game.placeNetworkCue(position?.x, position?.z)) sendNetwork({ type: "state", ...game.getNetworkState() });
+      return;
+    }
+    if (message.type === "state" && network?.role === "join") {
+      game.applyNetworkState(message);
+      return;
+    }
+    if (message.type === "restart-request" && network?.role === "host") game.restart();
+  }
+
+  function startOnline({ action, code, config }) {
+    network?.close();
+    const roomCode = action === "host" ? createRoomCode() : code;
+    const hostConfig = action === "host"
+      ? { ...config, multiplayerRoom: roomCode, multiplayer: true, multiplayerHost: true, localPlayer: 0, vsAi: false }
+      : null;
+    network = new MultiplayerSession({
+      onMessage: receiveNetwork,
+      onStatus: (status, error) => {
+        if (status === "connected") {
+          game.networkConnected = true;
+          ui.setOnlineStatus("onlineConnected");
+        } else if (status === "error") {
+          game.networkConnected = false;
+          ui.setOnlineStatus("onlineConnectionError", error?.message || "");
+          if (game.config?.multiplayer) ui.showMessage(`${ui.tx("onlineConnectionError")}: ${error?.message || ""}`, 5000);
+        } else if (status === "disconnected") {
+          game.networkConnected = false;
+          ui.setOnlineStatus("onlineDisconnected");
+          if (game.config?.multiplayer) ui.showMessage(ui.tx("onlineDisconnected"), 5000);
+        }
+      },
+    });
+    network.matchConfig = hostConfig;
+    ui.showOnlineLobby({ hosting: action === "host", code: roomCode });
+    if (action === "host") network.host(roomCode);
+    else network.join(roomCode);
+  }
 
   const controls = new Controls(renderer.domElement, settings);
   controls.onShoot = (pull) => {
@@ -84,7 +186,7 @@ if (!renderer) {
   });
 
   function syncAimFromControls() {
-    if (game.phase !== "aim" || game.players[game.modeState?.currentPlayer]?.isAi) return;
+    if (game.phase !== "aim" || !game.isLocalTurn()) return;
     const d = controls.aimDirection();
     ui.aimDir = { x: d.x, z: d.z };
     if (controls.charging) {
@@ -103,8 +205,11 @@ if (!renderer) {
     ui.aimDir = { x: 0, z: 1 };
     ui.power = 0.42;
     ui.syncAimWidgets();
+    game.networkConnected = !config.multiplayer || Boolean(network?.connection?.open);
     game.startMatch(config);
-    controls.setEnabled(true);
+    ui.setControlsEnabled(game.phase === "aim" && game.isLocalTurn());
+    ui.showScreen("screen-game");
+    controls.setEnabled(game.phase === "aim" && game.isLocalTurn());
   }
 
   let paused = false;
@@ -125,9 +230,12 @@ if (!renderer) {
       ui.setPause(false);
       paused = false;
       game.restart();
-      controls.setEnabled(true);
+      controls.setEnabled(game.phase === "aim" && game.isLocalTurn());
     }
     if (action === "menu") {
+      network?.close();
+      network = null;
+      game.networkConnected = false;
       ui.hideGameOver();
       ui.setPause(false);
       paused = false;
@@ -166,8 +274,8 @@ if (!renderer) {
   function loop(now) {
     const dt = Math.min(0.05, (now - last) / 1000);
     last = now;
-    controls.placeMode = game.phase === "place";
-    controls.setEnabled(game.phase === "aim" && !paused && !game.aiThinking);
+    controls.placeMode = game.phase === "place" && game.isLocalTurn();
+    controls.setEnabled(game.phase === "aim" && !paused && game.isLocalTurn());
     if (!paused) {
       controls.tickKeyboard(dt);
       syncAimFromControls();
