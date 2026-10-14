@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+    <meta name="theme-color" content="#0b1410" />
+    <title>Sinuquinha — Sinuca 3D</title>
+    <link rel="stylesheet" href="./css/style.css" />
+    <link rel="stylesheet" href="./css/menu.css" />
+    <link rel="stylesheet" href="./css/game.css" />
+  </head>
+  <body>
+    <div id="app">
+      <div id="view"></div>
+
+      <div id="hud" hidden>
+        <div class="topbar">
+          <div class="player-card" id="hudP1">
+            <div class="player-heading"><span class="player-avatar" aria-hidden="true"></span><div class="player-info"><div class="name">—</div><div class="meta"></div></div></div>
+            <div class="ball-rack" aria-label="Bolas restantes"></div>
+          </div>
+          <div class="mode-chip"><div id="hudMode"></div><div id="hudTurn"></div></div>
+          <div class="player-card player-card-right" id="hudP2">
+            <div class="player-heading"><span class="player-avatar" aria-hidden="true"></span><div class="player-info"><div class="name">—</div><div class="meta"></div></div></div>
+            <div class="ball-rack" aria-label="Bolas restantes"></div>
+          </div>
+          <div class="header-actions">
+            <button class="history-toggle ghost" type="button" data-history-toggle aria-expanded="false"><span aria-hidden="true">▤</span><span data-i18n="history">Histórico</span></button>
+            <button class="icon-btn ghost" data-pause-action="pause" data-i18n="pause">Pausar</button>
+          </div>
+        </div>
+        <aside class="history-box" id="historyPanel" hidden>
+          <div class="history-heading"><h4 data-i18n="history">Histórico</h4><button type="button" class="history-close ghost" data-history-toggle aria-label="Fechar histórico">×</button></div>
+          <ul id="hudHistory"></ul>
+        </aside>
+        <div class="spin-dock">
+          <span data-i18n="spin">Efeito</span>
+          <button
+            class="spin-ball"
+            id="spinBall"
+            type="button"
+            aria-label="Controle de efeitos da bola branca"
+            title="Arraste o pino vermelho para ajustar o efeito"
+          >
+            <span class="spin-dot" aria-hidden="true"></span>
+          </button>
+        </div>
+        <div id="toast"></div>
+        <div class="cam-dock">
+          <button data-cam="in" title="Zoom +">+</button>
+          <button data-cam="out" title="Zoom -">−</button>
+          <button data-cam="left">‹</button>
+          <button data-cam="right">›</button>
+          <button data-cam="angle" data-i18n="viewAngle">Ângulo</button>
+          <button data-cam="reset" data-i18n="camReset">Câmera</button>
+        </div>
+        <div class="aim-dock" id="aimDock">
+          <div class="power-control">
+            <div class="power-heading">
+              <span data-i18n="power">Força</span>
+              <output id="powerValue" for="powerSlider">42%</output>
+            </div>
+            <input id="powerSlider" type="range" min="0.08" max="1" step="0.01" value="0.42" />
+          </div>
+          <button class="shoot" data-shoot data-i18n="shoot"><span class="shoot-icon" aria-hidden="true">➤</span><span>Tacada</span></button>
+          <small class="keyboard-hint" data-i18n="keyboardHelp"></small>
+        </div>
+        <div class="place-dock" id="placeDock" hidden>
+          <small data-i18n="ballInHand">Bola na mão</small>
+        </div>
+      </div>
+
+      <section class="screen active" id="screen-home">
+        <div class="panel">
+          <div class="brand">
+            <div class="logo" aria-hidden="true"></div>
+            <h1 data-i18n="title">Sinuquinha</h1>
+            <p data-i18n="tagline">Sinuca 3D no navegador</p>
+          </div>
+          <div class="stack">
+            <button class="gold" data-nav="screen-play" data-i18n="play">Jogar</button>
+            <button class="ghost" data-nav="screen-settings" data-i18n="settings">Configurações</button>
+            <button class="ghost" data-nav="screen-stats" data-i18n="stats">Estatísticas</button>
+            <button class="ghost" data-nav="screen-tutorial" data-i18n="tutorial">Tutorial</button>
+            <button class="ghost" data-nav="screen-credits" data-i18n="credits">Créditos</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen" id="screen-play">
+        <div class="panel">
+          <h2 data-i18n="play">Jogar</h2>
+          <div class="stack">
+            <label><span data-i18n="modes">Modalidade</span>
+              <select id="modeSelect">
+                <option value="eight-ball">Bola 8</option>
+                <option value="even-odd">Par ou Ímpar</option>
+                <option value="bolinho">Bolinho</option>
+                <option value="three-balls">3 Bolas</option>
+              </select>
+            </label>
+            <label><span data-i18n="players">Jogadores</span>
+              <select id="playerSelect">
+                <option value="ai">1 jogador (contra o computador)</option>
+                <option value="hotseat">2 jogadores (mesmo aparelho)</option>
+              </select>
+            </label>
+            <label><span data-i18n="difficulty">Dificuldade</span>
+              <select id="diffSelect">
+                <option value="easy">Fácil</option>
+                <option value="medium" selected>Médio</option>
+                <option value="hard">Difícil</option>
+              </select>
+            </label>
+            <label class="check-row">
+              <input id="matchAimAssist" type="checkbox" checked />
+              <span data-i18n="matchAimAssist">Mostrar mira preditiva</span>
+            </label>
+            <p class="note" data-i18n="matchAimAssistHelp">Mostra o caminho da branca, a direção da bola atingida e a saída da branca após a colisão.</p>
+            <div id="evenOddSetup" class="setup-extra" hidden>
+              <p data-i18n="chooseCategory">Escolha sua categoria</p>
+              <div class="group-pick">
+                <button type="button" data-group="even" data-i18n="even">Pares</button>
+                <button type="button" data-group="odd" data-i18n="odd">Ímpares</button>
+              </div>
+            </div>
+            <div id="bolinhoSetup" class="setup-extra" hidden>
+              <label>Bolas numeradas
+                <select id="bolinhoCount">
+                  <option value="8" selected>8 (padrão)</option>
+                  <option value="9">9</option>
+                  <option value="15">15</option>
+                </select>
+              </label>
+            </div>
+            <button class="gold" data-start data-i18n="startMatch">Iniciar partida</button>
+            <button class="ghost" data-nav="screen-home" data-i18n="back">Voltar</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen" id="screen-rules">
+        <div class="panel">
+          <h2 data-i18n="rulesTitle">Regras desta partida</h2>
+          <ul class="rules-list" id="rulesList"></ul>
+          <div class="stack">
+            <button class="gold" id="confirmRules" data-i18n="acceptRules">Entendi, vamos jogar</button>
+            <button class="ghost" data-nav="screen-play" data-i18n="back">Voltar</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen" id="screen-settings">
+        <div class="panel">
+          <h2 data-i18n="settings">Configurações</h2>
+          <div class="stack">
+            <label><span data-i18n="graphics">Qualidade gráfica</span>
+              <select id="setQuality" data-setting>
+                <option value="low">Baixa</option>
+                <option value="medium">Média</option>
+                <option value="high" selected>Alta</option>
+              </select>
+            </label>
+            <label><span data-i18n="sfx">Volume dos efeitos</span><input id="setSfx" data-setting type="range" min="0" max="1" step="0.01" /></label>
+            <label><span data-i18n="music">Volume da música</span><input id="setMusic" data-setting type="range" min="0" max="1" step="0.01" /></label>
+            <label><span data-i18n="aimSens">Sensibilidade da mira</span><input id="setAim" data-setting type="range" min="0.4" max="2" step="0.05" /></label>
+            <label><span data-i18n="camSpeed">Velocidade da câmera</span><input id="setCamSpeed" data-setting type="range" min="0.4" max="2" step="0.05" /></label>
+            <label><span data-i18n="camDist">Distância da câmera</span><input id="setCamDist" data-setting type="range" min="0.7" max="1.5" step="0.05" /></label>
+            <label><span data-i18n="language">Idioma</span>
+              <select id="setLang" data-setting>
+                <option value="pt-BR">Português</option>
+                <option value="en">English</option>
+              </select>
+            </label>
+            <label><input id="setVibrate" data-setting type="checkbox" /> <span data-i18n="vibrate">Vibração</span></label>
+            <label><input id="setFull" data-setting type="checkbox" /> <span data-i18n="fullscreen">Tela cheia</span></label>
+            <label><input id="setAimAssist" data-setting type="checkbox" checked /> <span data-i18n="aimAssist">Linhas auxiliares de mira</span></label>
+            <button class="ghost" data-nav="screen-home" data-i18n="back">Voltar</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen" id="screen-stats">
+        <div class="panel">
+          <h2 data-i18n="stats">Estatísticas</h2>
+          <p class="note" data-i18n="statsLocalNote"></p>
+          <div class="stat-grid" id="statsBody"></div>
+          <div class="stack" style="margin-top:14px">
+            <button class="ghost" data-reset-stats data-i18n="resetStats">Zerar estatísticas</button>
+            <button class="ghost" data-nav="screen-home" data-i18n="back">Voltar</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen" id="screen-tutorial">
+        <div class="panel">
+          <h2 data-i18n="tutorial">Tutorial</h2>
+          <p class="note" data-i18n="tutorialBody"></p>
+          <button class="ghost" data-nav="screen-home" data-i18n="back">Voltar</button>
+        </div>
+      </section>
+
+      <section class="screen" id="screen-credits">
+        <div class="panel">
+          <h2 data-i18n="credits">Créditos</h2>
+          <p class="note" data-i18n="creditsBody"></p>
+          <button class="ghost" data-nav="screen-home" data-i18n="back">Voltar</button>
+        </div>
+      </section>
+
+      <div id="pauseMenu" hidden>
+        <div class="panel">
+          <h2 data-i18n="pause">Pausar</h2>
+          <div class="stack">
+            <button class="gold" data-pause-action="resume" data-i18n="resume">Continuar</button>
+            <button data-pause-action="restart" data-i18n="restart">Reiniciar</button>
+            <button class="ghost" data-pause-action="menu" data-i18n="menu">Menu</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="gameOver" hidden>
+        <div class="panel">
+          <h2 data-i18n="gameOver">Fim de partida</h2>
+          <p></p>
+          <div class="stack">
+            <button class="gold" data-pause-action="restart" data-i18n="playAgain">Jogar de novo</button>
+            <button class="ghost" data-pause-action="menu" data-i18n="menu">Menu</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script type="module" src="./js/main.js"></script>
+  </body>
+</html>

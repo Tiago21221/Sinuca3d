@@ -1,0 +1,21 @@
+{
+  "name": "sinuquinha",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Jogo de sinuca 3D para navegador — Par ou Ímpar, Bolinho e Bola 8",
+  "scripts": {
+    "dev": "vite --host",
+    "build": "vite build",
+    "preview": "vite preview --host",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "cannon-es": "^0.20.0",
+    "three": "^0.170.0"
+  },
+  "devDependencies": {
+    "vite": "^6.0.3",
+    "vitest": "^2.1.8"
+  }
+}

@@ -1,0 +1,94 @@
+:root {
+  --felt: #0f3d24;
+  --felt-bright: #1f7a46;
+  --wood: #8b5a2b;
+  --gold: #d4b36a;
+  --ink: #f4efe4;
+  --muted: #c5bba8;
+  --bg: #070b09;
+  --panel: rgba(12, 18, 16, 0.88);
+  --danger: #c45c4a;
+  font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; background: var(--bg); color: var(--ink); overflow: hidden; }
+
+#app { height: 100%; position: relative; }
+#view { position: absolute; inset: 0; }
+#view canvas { display: block; width: 100%; height: 100%; touch-action: none; }
+
+.screen {
+  display: none;
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  background:
+    radial-gradient(circle at 20% 20%, rgba(31, 122, 70, 0.35), transparent 40%),
+    radial-gradient(circle at 80% 80%, rgba(139, 90, 43, 0.25), transparent 42%),
+    linear-gradient(180deg, #0b1410, #070b09);
+  overflow: auto;
+  padding: 24px 18px 48px;
+}
+.screen.active { display: grid; place-items: center; }
+
+.panel {
+  width: min(560px, 100%);
+  background: var(--panel);
+  border: 1px solid rgba(212, 179, 106, 0.28);
+  border-radius: 18px;
+  padding: 28px 24px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(10px);
+}
+
+.brand { text-align: center; margin-bottom: 22px; }
+.logo {
+  width: 72px; height: 72px; margin: 0 auto 10px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, #f7f1e1, #d4b36a 45%, #5a3218);
+  box-shadow: 0 0 0 4px #14532d, 0 0 24px rgba(212, 179, 106, 0.45);
+}
+.brand h1 { margin: 0; letter-spacing: 0.14em; text-transform: uppercase; font-size: 1.8rem; color: var(--gold); }
+.brand p { margin: 6px 0 0; color: var(--muted); }
+
+.stack { display: grid; gap: 10px; }
+.row { display: flex; gap: 10px; flex-wrap: wrap; }
+
+button, .btn {
+  appearance: none; border: 0; cursor: pointer;
+  background: linear-gradient(180deg, #2a8a52, #146b38);
+  color: var(--ink); font-weight: 700; letter-spacing: 0.04em;
+  padding: 12px 16px; border-radius: 12px;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.25), 0 6px 16px rgba(0,0,0,0.35);
+  transition: transform 0.12s ease, filter 0.12s ease;
+}
+button:hover, .btn:hover { filter: brightness(1.08); transform: translateY(-1px); }
+button:active { transform: translateY(1px); }
+button.ghost, .ghost {
+  background: transparent;
+  border: 1px solid rgba(212, 179, 106, 0.35);
+  color: var(--gold);
+  box-shadow: none;
+}
+button.gold {
+  background: linear-gradient(180deg, #e0c37a, #b4893a);
+  color: #1a1208;
+}
+
+label, select, input[type="range"] { width: 100%; }
+label { display: grid; gap: 6px; color: var(--muted); font-size: 0.92rem; }
+select, input[type="text"] {
+  background: #101816; color: var(--ink); border: 1px solid rgba(212,179,106,0.25);
+  border-radius: 10px; padding: 10px;
+}
+
+.webgl-error {
+  position: absolute; inset: 0; z-index: 20; display: grid; place-items: center;
+  background: #0b0e0c; padding: 32px; text-align: center;
+}
+
+@media (max-width: 720px) {
+  .panel { padding: 20px 16px; }
+  button { min-height: 44px; }
+}
