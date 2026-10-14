@@ -3,12 +3,32 @@ import Peer from "peerjs";
 const PEER_PREFIX = "sinuq-";
 const ROOM_ALPHABET = "23456789abcdefghjkmnpqrstuvwxyz";
 const CONNECTION_TIMEOUT_MS = 30000;
+const PEER_OPTIONS = {
+  // Keep PeerJS Cloud as the signaling service, but include TURN over TCP as
+  // well as UDP. Mobile carriers and some routers block UDP, which otherwise
+  // makes a room work on the same Wi-Fi but fail between distant networks.
+  config: {
+    iceServers: [
+      { urls: "stun:stun.l.google.com:19302" },
+      {
+        urls: [
+          "turn:eu-0.turn.peerjs.com:3478?transport=udp",
+          "turn:eu-0.turn.peerjs.com:3478?transport=tcp",
+          "turn:us-0.turn.peerjs.com:3478?transport=udp",
+          "turn:us-0.turn.peerjs.com:3478?transport=tcp",
+        ],
+        username: "peerjs",
+        credential: "peerjsp",
+      },
+    ],
+    sdpSemantics: "unified-plan",
+  },
+};
 
 function createPeer(id) {
-  // Do not pin the PeerJS Cloud address here.  The library keeps its cloud
-  // configuration (including its STUN/TURN fallback) up to date, which is
-  // particularly important for a static deployment such as Vercel.
-  return id ? new Peer(id) : new Peer();
+  // Do not pin the PeerJS Cloud address here. The library selects its current
+  // cloud signaling endpoint; only the ICE fallback is customized above.
+  return id ? new Peer(id, PEER_OPTIONS) : new Peer(PEER_OPTIONS);
 }
 
 export function createRoomCode() {
