@@ -1,14 +1,15 @@
 import Peer from "peerjs";
 
 const PEER_PREFIX = "sinuq-";
-const PEER_OPTIONS = {
-  host: "0.peerjs.com",
-  port: 443,
-  path: "/",
-  secure: true,
-};
 const ROOM_ALPHABET = "23456789abcdefghjkmnpqrstuvwxyz";
 const CONNECTION_TIMEOUT_MS = 30000;
+
+function createPeer(id) {
+  // Do not pin the PeerJS Cloud address here.  The library keeps its cloud
+  // configuration (including its STUN/TURN fallback) up to date, which is
+  // particularly important for a static deployment such as Vercel.
+  return id ? new Peer(id) : new Peer();
+}
 
 export function createRoomCode() {
   const values = new Uint8Array(6);
@@ -25,11 +26,12 @@ export class MultiplayerSession {
     this.role = null;
     this.timeout = null;
     this.closed = false;
+    this.connected = false;
   }
 
   host(code) {
     this.role = "host";
-    this.peer = new Peer(`${PEER_PREFIX}${code}`, PEER_OPTIONS);
+    this.peer = createPeer(`${PEER_PREFIX}${code}`);
     this._bindPeer();
     this._setTimeout();
     this.peer.on("open", () => {
@@ -53,7 +55,7 @@ export class MultiplayerSession {
 
   join(code) {
     this.role = "join";
-    this.peer = new Peer(undefined, PEER_OPTIONS);
+    this.peer = createPeer();
     this._bindPeer();
     this._setTimeout();
     this.peer.on("open", () => {
@@ -76,10 +78,12 @@ export class MultiplayerSession {
 
   _bindConnection(connection) {
     this.connection = connection;
+    this.connected = false;
     this._setTimeout();
     connection.on("open", () => {
       if (this.closed || this.connection !== connection) return;
       this._clearTimeout();
+      this.connected = true;
       this.onStatus?.("connected");
       if (this.role === "join") this.send({ type: "join" });
     });
@@ -92,7 +96,16 @@ export class MultiplayerSession {
     connection.on("close", () => {
       if (this.connection === connection) this.connection = null;
       this._clearTimeout();
-      if (!this.closed) this.onStatus?.("disconnected");
+      if (this.closed) return;
+
+      // A channel that closes before it ever opens used to leave the lobby
+      // looking as if it were still connecting. Surface a terminal failure
+      // instead, so the player can return and try the code again.
+      if (!this.connected) {
+        this._fail("error", new Error("Não foi possível abrir a conexão com esta sala."));
+        return;
+      }
+      this.onStatus?.("disconnected");
     });
   }
 

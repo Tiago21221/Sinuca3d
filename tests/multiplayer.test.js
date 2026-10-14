@@ -82,4 +82,16 @@ describe("conexão entre dispositivos", () => {
     peer.emit("open");
     expect(onStatus).toHaveBeenLastCalledWith("waiting");
   });
+
+  it("informa a falha quando o canal fecha antes de conectar", () => {
+    const onStatus = vi.fn();
+    const session = new MultiplayerSession({ onStatus });
+
+    session.join("abc234");
+    peer.emit("open");
+    connection.emit("close");
+
+    expect(onStatus).toHaveBeenCalledWith("error", expect.any(Error));
+    expect(peer.destroy).toHaveBeenCalledOnce();
+  });
 });
