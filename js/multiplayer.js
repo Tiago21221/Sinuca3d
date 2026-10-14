@@ -3,32 +3,86 @@ import Peer from "peerjs";
 const PEER_PREFIX = "sinuq-";
 const ROOM_ALPHABET = "23456789abcdefghjkmnpqrstuvwxyz";
 const CONNECTION_TIMEOUT_MS = 30000;
-const PEER_OPTIONS = {
-  // Keep PeerJS Cloud as the signaling service, but include TURN over TCP as
-  // well as UDP. Mobile carriers and some routers block UDP, which otherwise
-  // makes a room work on the same Wi-Fi but fail between distant networks.
-  config: {
-    iceServers: [
-      { urls: "stun:stun.l.google.com:19302" },
-      {
-        urls: [
-          "turn:eu-0.turn.peerjs.com:3478?transport=udp",
-          "turn:eu-0.turn.peerjs.com:3478?transport=tcp",
-          "turn:us-0.turn.peerjs.com:3478?transport=udp",
-          "turn:us-0.turn.peerjs.com:3478?transport=tcp",
-        ],
-        username: "peerjs",
-        credential: "peerjsp",
-      },
-    ],
-    sdpSemantics: "unified-plan",
-  },
-};
+const OPEN_RELAY_HOST = "staticauth.openrelay.metered.ca";
+const OPEN_RELAY_SECRET = "openrelayprojectsecret";
+const TURN_CREDENTIAL_TTL_SECONDS = 60 * 60;
+const TURN_CREDENTIALS_ENDPOINT = "/api/turn-credentials";
 
-function createPeer(id) {
-  // Do not pin the PeerJS Cloud address here. The library selects its current
-  // cloud signaling endpoint; only the ICE fallback is customized above.
-  return id ? new Peer(id, PEER_OPTIONS) : new Peer(PEER_OPTIONS);
+function base64(bytes) {
+  let binary = "";
+  for (const byte of new Uint8Array(bytes)) binary += String.fromCharCode(byte);
+  return btoa(binary);
+}
+
+async function createOpenRelayIceServers() {
+  // Open Relay publishes this static-auth endpoint and secret for compatible
+  // clients. The browser creates a short-lived TURN credential; the secret is
+  // not a private application credential. Ports 80 and 443 make this work on
+  // networks that block WebRTC's usual UDP port.
+  const username = `${Math.floor(Date.now() / 1000) + TURN_CREDENTIAL_TTL_SECONDS}:sinuquinha`;
+  const key = await crypto.subtle.importKey(
+    "raw",
+    new TextEncoder().encode(OPEN_RELAY_SECRET),
+    { name: "HMAC", hash: "SHA-1" },
+    false,
+    ["sign"]
+  );
+  const signature = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(username));
+
+  return [
+    {
+      urls: [
+        `turn:${OPEN_RELAY_HOST}:80?transport=udp`,
+        `turn:${OPEN_RELAY_HOST}:80?transport=tcp`,
+        `turn:${OPEN_RELAY_HOST}:443?transport=udp`,
+        `turn:${OPEN_RELAY_HOST}:443?transport=tcp`,
+        `turns:${OPEN_RELAY_HOST}:443?transport=tcp`,
+      ],
+      username,
+      credential: base64(signature),
+    },
+  ];
+}
+
+async function fetchManagedIceServers() {
+  const response = await fetch(TURN_CREDENTIALS_ENDPOINT, { cache: "no-store" });
+  if (!response.ok) throw new Error("O relay gerenciado não está disponível.");
+  const payload = await response.json();
+  if (!Array.isArray(payload?.iceServers) || payload.iceServers.length === 0) {
+    throw new Error("O relay gerenciado retornou uma configuração inválida.");
+  }
+  return payload.iceServers;
+}
+
+async function createPeerOptions() {
+  let iceServers;
+  try {
+    // When configured on Vercel, this uses short-lived credentials generated
+    // by our serverless function. It is the reliable production path.
+    iceServers = await fetchManagedIceServers();
+  } catch {
+    // The public Open Relay fallback keeps existing deployments functional
+    // until the managed credentials have been configured.
+    iceServers = await createOpenRelayIceServers();
+  }
+
+  return {
+    config: {
+      // The game exchanges very little data, so favor a TURN relay over a
+      // fragile direct route. This is what makes players on different NATs,
+      // mobile networks, or distant Wi-Fi networks connect consistently.
+      iceTransportPolicy: "relay",
+      iceServers,
+      sdpSemantics: "unified-plan",
+    },
+  };
+}
+
+async function createPeer(id) {
+  // Do not pin the PeerJS Cloud address: PeerJS still handles signaling, while
+  // the options above supply the relay that carries the game across networks.
+  const options = await createPeerOptions();
+  return id ? new Peer(id, options) : new Peer(options);
 }
 
 export function createRoomCode() {
@@ -49,11 +103,22 @@ export class MultiplayerSession {
     this.connected = false;
   }
 
-  host(code) {
+  async host(code) {
     this.role = "host";
-    this.peer = createPeer(`${PEER_PREFIX}${code}`);
-    this._bindPeer();
+    this.onStatus?.("connecting");
     this._setTimeout();
+    try {
+      this.peer = await createPeer(`${PEER_PREFIX}${code}`);
+    } catch (error) {
+      this._fail("error", error);
+      return;
+    }
+    if (this.closed) {
+      this.peer.destroy();
+      this.peer = null;
+      return;
+    }
+    this._bindPeer();
     this.peer.on("open", () => {
       if (this.closed) return;
       this._clearTimeout();
@@ -70,14 +135,24 @@ export class MultiplayerSession {
       }
       this._bindConnection(connection);
     });
-    this.onStatus?.("connecting");
   }
 
-  join(code) {
+  async join(code) {
     this.role = "join";
-    this.peer = createPeer();
-    this._bindPeer();
+    this.onStatus?.("connecting");
     this._setTimeout();
+    try {
+      this.peer = await createPeer();
+    } catch (error) {
+      this._fail("error", error);
+      return;
+    }
+    if (this.closed) {
+      this.peer.destroy();
+      this.peer = null;
+      return;
+    }
+    this._bindPeer();
     this.peer.on("open", () => {
       if (this.closed) return;
       this._clearTimeout();

@@ -43,11 +43,11 @@ describe("conexão entre dispositivos", () => {
     vi.clearAllMocks();
   });
 
-  it("encerra uma tentativa que fica presa ao abrir o canal WebRTC", () => {
+  it("encerra uma tentativa que fica presa ao abrir o canal WebRTC", async () => {
     const onStatus = vi.fn();
     const session = new MultiplayerSession({ onStatus });
 
-    session.join("abc234");
+    await session.join("abc234");
     peer.emit("open");
     vi.advanceTimersByTime(30000);
 
@@ -56,11 +56,11 @@ describe("conexão entre dispositivos", () => {
     expect(connection.close).toHaveBeenCalledOnce();
   });
 
-  it("limpa o timeout e envia a entrada quando o canal abre", () => {
+  it("limpa o timeout e envia a entrada quando o canal abre", async () => {
     const onStatus = vi.fn();
     const session = new MultiplayerSession({ onStatus });
 
-    session.join("abc234");
+    await session.join("abc234");
     peer.emit("open");
     connection.open = true;
     connection.emit("open");
