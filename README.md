@@ -74,7 +74,7 @@ Ficam só neste navegador, via LocalStorage. Não são enviadas nem sincronizada
 
 ## Partida online
 
-Em **Jogar**, selecione **2 jogadores (dispositivos diferentes)**. O anfitrião escolhe a modalidade, cria uma sala e compartilha o código de seis caracteres; o outro jogador informa esse código no próprio aparelho. Aguarde o anfitrião ver **Aguardando outro jogador** antes de inserir o código no segundo aparelho. A conexão da partida é ponto a ponto via WebRTC. O PeerJS Cloud é usado para sinalizar; a conexão tenta primeiro uma rota direta e usa TURN quando a rede exigir. Para TURN gerenciado, configure `CLOUDFLARE_TURN_KEY_ID` e `CLOUDFLARE_TURN_API_TOKEN` na Vercel; há um relay público como fallback. Se a sinalização ou o canal WebRTC não abrir em até 30 segundos, a tentativa termina com uma mensagem para conferir o código e a sala. O jogo continua sem servidor próprio de partida.
+Em **Jogar**, selecione **2 jogadores (dispositivos diferentes)**. O anfitrião escolhe a modalidade, cria uma sala e compartilha o código de seis caracteres; o outro jogador informa esse código no próprio aparelho. Aguarde o anfitrião ver **Aguardando outro jogador** antes de inserir o código no segundo aparelho. O PeerJS Cloud sinaliza a partida; WebRTC tenta conexão direta e usa TURN como relay entre redes diferentes. A API TURN fica na Vercel e é compartilhada pelo site Vercel e pelo GitHub Pages. Configure `CLOUDFLARE_TURN_KEY_ID` e `CLOUDFLARE_TURN_API_TOKEN` nas variáveis de ambiente da Vercel; sem elas, o jogo avisa que a conexão entre redes diferentes pode falhar. Se o canal não abrir em até 30 segundos, confira o código e o relay TURN. O jogo não armazena credenciais TURN no navegador.
 
 ## Estrutura
 

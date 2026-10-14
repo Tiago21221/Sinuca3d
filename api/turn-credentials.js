@@ -1,6 +1,23 @@
 const TURN_API_BASE = "https://rtc.live.cloudflare.com/v1/turn/keys";
+const ALLOWED_ORIGINS = new Set([
+  "https://tiago21221.github.io",
+  "https://sinuca3d.vercel.app",
+]);
 
 export default async function handler(request, response) {
+  const origin = request.headers.origin;
+  response.setHeader("Vary", "Origin");
+  if (ALLOWED_ORIGINS.has(origin)) {
+    response.setHeader("Access-Control-Allow-Origin", origin);
+  }
+  response.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
+  response.setHeader("Access-Control-Allow-Headers", "Content-Type");
+
+  if (request.method === "OPTIONS") {
+    response.status(204).end();
+    return;
+  }
+
   if (request.method !== "GET") {
     response.setHeader("Allow", "GET");
     response.status(405).json({ error: "Método não permitido." });

@@ -176,12 +176,20 @@ export class UI {
     }
     if (copyButton) copyButton.hidden = !hosting;
     this.setOnlineStatus("onlineConnecting");
+    this.setOnlineWarning("");
     this.showScreen("screen-online");
   }
 
   setOnlineStatus(key, detail = "") {
     const status = this.root.querySelector("#onlineStatus");
     if (status) status.textContent = `${this.tx(key)}${detail ? `: ${detail}` : ""}`;
+  }
+
+  setOnlineWarning(key) {
+    const warning = this.root.querySelector("#onlineWarning");
+    if (!warning) return;
+    warning.hidden = !key;
+    warning.textContent = key ? this.tx(key) : "";
   }
 
   async _copyRoomCode() {

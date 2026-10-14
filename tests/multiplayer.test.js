@@ -26,6 +26,7 @@ describe("conexão entre dispositivos", () => {
 
   beforeEach(() => {
     vi.useFakeTimers();
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: false }));
     connection = createEmitter({
       open: false,
       send: vi.fn(),
@@ -40,6 +41,7 @@ describe("conexão entre dispositivos", () => {
 
   afterEach(() => {
     vi.useRealTimers();
+    vi.unstubAllGlobals();
     vi.clearAllMocks();
   });
 

@@ -124,10 +124,13 @@ if (!renderer) {
         if (status === "connected") {
           game.networkConnected = true;
           ui.setOnlineStatus("onlineConnected");
+          ui.setOnlineWarning("");
         } else if (status === "waiting") {
           ui.setOnlineStatus("onlineWaiting");
         } else if (status === "connecting") {
           ui.setOnlineStatus("onlineConnecting");
+        } else if (status === "relay-unavailable") {
+          ui.setOnlineWarning("onlineRelayUnavailable");
         } else if (status === "timeout") {
           game.networkConnected = false;
           ui.setOnlineStatus("onlineTimeout");

@@ -16,10 +16,17 @@ const PEERJS_ICE_SERVERS = [
     credential: "peerjsp",
   },
 ];
+const TURN_API_ORIGIN = "https://sinuca3d.vercel.app";
 const OPEN_RELAY_HOST = "staticauth.openrelay.metered.ca";
 const OPEN_RELAY_SECRET = "openrelayprojectsecret";
 const TURN_CREDENTIAL_TTL_SECONDS = 60 * 60;
-const TURN_CREDENTIALS_ENDPOINT = "/api/turn-credentials";
+
+function getTurnCredentialsEndpoint() {
+  if (typeof window !== "undefined" && window.location.hostname.endsWith(".vercel.app")) {
+    return "/api/turn-credentials";
+  }
+  return `${TURN_API_ORIGIN}/api/turn-credentials`;
+}
 
 function base64(bytes) {
   let binary = "";
@@ -58,7 +65,7 @@ async function createOpenRelayIceServers() {
 }
 
 async function fetchManagedIceServers() {
-  const response = await fetch(TURN_CREDENTIALS_ENDPOINT, { cache: "no-store" });
+  const response = await fetch(getTurnCredentialsEndpoint(), { cache: "no-store" });
   if (!response.ok) throw new Error("O relay gerenciado não está disponível.");
   const payload = await response.json();
   if (!Array.isArray(payload?.iceServers) || payload.iceServers.length === 0) {
@@ -67,13 +74,14 @@ async function fetchManagedIceServers() {
   return payload.iceServers;
 }
 
-async function createPeerOptions() {
+async function createPeerOptions(onRelayUnavailable) {
   let iceServers;
   try {
     // When configured on Vercel, this uses short-lived credentials generated
     // by our serverless function. It is the reliable production path.
     iceServers = await fetchManagedIceServers();
-  } catch {
+  } catch (error) {
+    onRelayUnavailable?.(error);
     // Keep a public TURN fallback for deployments without managed credentials.
     iceServers = await createOpenRelayIceServers();
   }
@@ -89,10 +97,10 @@ async function createPeerOptions() {
   };
 }
 
-async function createPeer(id) {
+async function createPeer(id, onRelayUnavailable) {
   // Do not pin the PeerJS Cloud address: PeerJS still handles signaling, while
   // the options above supply the relay that carries the game across networks.
-  const options = await createPeerOptions();
+  const options = await createPeerOptions(onRelayUnavailable);
   return id ? new Peer(id, options) : new Peer(options);
 }
 
@@ -119,7 +127,9 @@ export class MultiplayerSession {
     this.onStatus?.("connecting");
     this._setTimeout();
     try {
-      this.peer = await createPeer(`${PEER_PREFIX}${code}`);
+      this.peer = await createPeer(`${PEER_PREFIX}${code}`, (error) => {
+        if (!this.closed) this.onStatus?.("relay-unavailable", error);
+      });
     } catch (error) {
       this._fail("error", error);
       return;
@@ -153,7 +163,9 @@ export class MultiplayerSession {
     this.onStatus?.("connecting");
     this._setTimeout();
     try {
-      this.peer = await createPeer();
+      this.peer = await createPeer(null, (error) => {
+        if (!this.closed) this.onStatus?.("relay-unavailable", error);
+      });
     } catch (error) {
       this._fail("error", error);
       return;
