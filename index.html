@@ -34,6 +34,18 @@
           <ul id="hudHistory"></ul>
         </aside>
         <div id="toast"></div>
+        <div class="spin-dock">
+          <span data-i18n="spin">Efeito</span>
+          <button
+            class="spin-ball"
+            id="spinBall"
+            type="button"
+            aria-label="Controle de efeitos da bola branca"
+            title="Arraste o pino vermelho para ajustar o efeito"
+          >
+            <span class="spin-dot" aria-hidden="true"></span>
+          </button>
+        </div>
         <div class="mobile-controls-panel" id="mobileControlsPanel" aria-label="Controles da partida">
           <div class="mobile-controls-heading">
             <span data-i18n="controls">Controles</span>
@@ -51,18 +63,6 @@
               <button class="shoot" data-shoot aria-label="Executar tacada"><span class="shoot-icon" aria-hidden="true">↗</span><span data-i18n="shoot">Tacada</span></button>
               <small class="keyboard-hint" data-i18n="keyboardHelp"></small>
             </div>
-          </div>
-          <div class="spin-dock">
-            <span data-i18n="spin">Efeito</span>
-            <button
-              class="spin-ball"
-              id="spinBall"
-              type="button"
-              aria-label="Controle de efeitos da bola branca"
-              title="Arraste o pino vermelho para ajustar o efeito"
-            >
-              <span class="spin-dot" aria-hidden="true"></span>
-            </button>
           </div>
           <div class="cam-dock" aria-label="Controles da câmera">
             <button type="button" data-cam="in" title="Aproximar" aria-label="Aproximar câmera">+</button>
