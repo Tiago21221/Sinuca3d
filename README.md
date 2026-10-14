@@ -30,12 +30,18 @@ Testes das regras:
 npm test
 ```
 
-Build estático para publicar (Netlify, GitHub Pages, pasta `dist` em qualquer hospedagem HTTPS):
+Build estático para publicar:
 
 ```bash
 npm run build
 npm run preview
 ```
+
+### Publicar no GitHub Pages
+
+O workflow `.github/workflows/deploy-pages.yml` instala as dependências, compila o site com Vite e publica a pasta `dist` sempre que há um push na branch `main`.
+
+Na primeira publicação, abra **Settings → Pages** no repositório e selecione **GitHub Actions** como origem do build. A raiz do repositório não deve ser publicada diretamente: ela contém os arquivos-fonte, que precisam ser compilados antes de o navegador conseguir carregar o jogo.
 
 ## Modalidades e regras adotadas
 
