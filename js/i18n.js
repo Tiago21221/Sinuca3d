@@ -80,6 +80,8 @@ const dictionaries = {
     language: "Idioma",
     vibrate: "Vibração",
     fullscreen: "Tela cheia",
+    exitFullscreen: "Sair da tela cheia",
+    fullscreenUnavailable: "Tela cheia não está disponível neste navegador",
     aimAssist: "Mira ativada por padrão",
     matchAimAssist: "Mostrar mira preditiva nesta partida",
     matchAimAssistHelp: "Mostra a trajetória da branca, a direção da bola atingida e a saída provável da branca após a colisão.",
@@ -105,7 +107,7 @@ const dictionaries = {
     creditsBody:
       "Sinuquinha — jogo de sinuca 3D para navegador. Gráficos: Three.js. Física: cannon-es. Sons gerados no aparelho (Web Audio API), sem trechos protegidos por direitos autorais. Desenvolvido para rodar direto no Chrome, Edge e Firefox.",
     tutorialBody:
-      "No computador, segure o botão esquerdo: arraste na horizontal para girar a mira, puxe para trás para escolher a força e empurre para frente para tacar. Soltar depois de puxar também executa a tacada. Use a barra de força e o botão Tacada como alternativa. A/D: mira; W/S: força; Espaço: tacada; setas: câmera; Q/E: zoom; C: ângulo; R: câmera inicial; Esc: pausa. Na bola na mão, clique no pano para posicionar ou use as setas e Enter. No celular, arraste para mirar e use a barra e o botão grande de tacada.",
+      "No computador, segure o botão esquerdo: arraste na horizontal para girar a mira, puxe para trás para escolher a força e empurre para frente para tacar. Soltar depois de puxar também executa a tacada. Use a barra de força e o botão Tacada como alternativa. A/D: mira; W/S: força; Espaço: tacada; setas: câmera; Q/E: zoom; C: ângulo; R: câmera inicial; Esc: pausa. Na bola na mão, clique no pano para posicionar ou use as setas e Enter. No celular, arraste na mesa para mirar, ajuste a força pelo controle deslizante e toque em Tacada para jogar. Use os botões laterais para câmera e tela cheia.",
     potted: "Encaçapou",
     firstContact: "Primeiro contato",
     scratch: "Bola branca encaçapada",
@@ -209,6 +211,8 @@ const dictionaries = {
     language: "Language",
     vibrate: "Vibration",
     fullscreen: "Fullscreen",
+    exitFullscreen: "Exit fullscreen",
+    fullscreenUnavailable: "Fullscreen is not available in this browser",
     aimAssist: "Aim enabled by default",
     matchAimAssist: "Show predictive aiming in this match",
     matchAimAssistHelp: "Shows the cue ball path, the target ball direction, and the cue ball's predicted path after impact.",
@@ -235,7 +239,7 @@ const dictionaries = {
     creditsBody:
       "Sinuquinha — 3D pool in the browser. Graphics: Three.js. Physics: cannon-es. Sounds are synthesized locally (Web Audio API) with no copyrighted samples.",
     tutorialBody:
-      "On desktop, hold the left mouse button: drag horizontally to rotate the aim, pull back to set power, then push forward to shoot. Releasing after pulling also shoots. The power slider and Shoot button are alternatives. A/D: aim; W/S: power; Space: shoot; arrows: camera; Q/E: zoom; C: angle; R: reset camera; Esc: pause. During ball in hand, click the cloth to place or use arrows and Enter. On phones, drag to aim and use the slider and large Shoot button.",
+      "On desktop, hold the left mouse button: drag horizontally to rotate the aim, pull back to set power, then push forward to shoot. Releasing after pulling also shoots. The power slider and Shoot button are alternatives. A/D: aim; W/S: power; Space: shoot; arrows: camera; Q/E: zoom; C: angle; R: reset camera; Esc: pause. During ball in hand, click the cloth to place or use arrows and Enter. On phones, drag on the table to aim, set power with the slider, then tap Shoot. Use the side buttons for camera and fullscreen.",
     potted: "Potted",
     firstContact: "First contact",
     scratch: "Cue ball potted",

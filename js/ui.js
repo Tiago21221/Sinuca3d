@@ -129,6 +129,8 @@ export class UI {
       el.addEventListener("change", () => this._readSettings());
       el.addEventListener("input", () => this._readSettings());
     });
+
+    document.addEventListener("fullscreenchange", () => this._syncFullscreenButton());
   }
 
   _toggleModeExtras() {
@@ -251,6 +253,7 @@ export class UI {
       ?.setAttribute("aria-label", this.tx("history"));
     this.root.querySelector(".history-close")
       ?.setAttribute("aria-label", this.tx("historyClose"));
+    this._syncFullscreenButton();
     const spinBall = this.root.querySelector("#spinBall");
     if (spinBall) {
       spinBall.title = this.tx("spinHelp");
@@ -488,7 +491,25 @@ export class UI {
   }
 
   toggleFullscreen() {
-    if (!document.fullscreenElement) document.documentElement.requestFullscreen?.();
-    else document.exitFullscreen?.();
+    const target = document.fullscreenElement ? document : document.documentElement;
+    const action = document.fullscreenElement ? target.exitFullscreen : target.requestFullscreen;
+    if (typeof action !== "function") {
+      this.showMessage(this.tx("fullscreenUnavailable"));
+      return;
+    }
+    Promise.resolve(action.call(target)).catch((error) => {
+      this.showMessage(error.message || this.tx("fullscreenUnavailable"));
+    });
+  }
+
+  _syncFullscreenButton() {
+    const button = this.root.querySelector("[data-fullscreen]");
+    if (!button) return;
+    const label = this.tx(document.fullscreenElement ? "exitFullscreen" : "fullscreen");
+    button.setAttribute("aria-pressed", String(Boolean(document.fullscreenElement)));
+    button.setAttribute("aria-label", label);
+    button.title = label;
+    const text = button.querySelector("[data-i18n]");
+    if (text) text.textContent = label;
   }
 }

@@ -56,6 +56,25 @@ describe("controles de jogo", () => {
     }
   });
 
+  it("usa arrasto de toque somente para mirar e mantém a força até o botão de tacada", () => {
+    const { controls, restore } = createControls();
+    let shots = 0;
+    controls.enabled = true;
+    controls.power = 0.42;
+    controls.onShoot = () => shots++;
+
+    try {
+      controls._down({ pointerId: 1, pointerType: "touch", clientX: 10, clientY: 10, button: 0 });
+      controls._move({ pointerId: 1, pointerType: "touch", clientX: 40, clientY: 100 });
+      controls._up({ pointerId: 1, pointerType: "touch" });
+      expect(shots).toBe(0);
+      expect(controls.aimAngle).not.toBe(0);
+      expect(controls.power).toBe(0.42);
+    } finally {
+      restore();
+    }
+  });
+
   it("dispara ao puxar e empurrar o mouse para frente", () => {
     const { controls, restore } = createControls();
     let shots = 0;

@@ -29,6 +29,7 @@ export class Controls {
     canvas.addEventListener("pointerdown", (e) => this._down(e));
     canvas.addEventListener("pointermove", (e) => this._move(e));
     window.addEventListener("pointerup", (e) => this._up(e));
+    window.addEventListener("pointercancel", (e) => this._up(e));
     canvas.addEventListener(
       "wheel",
       (e) => {
@@ -88,12 +89,13 @@ export class Controls {
       return;
     }
     this.draggingAim = true;
-    this.charging = true;
+    this.aimOnly = e.pointerType === "touch";
+    this.charging = !this.aimOnly;
     this._last = { x: e.clientX, y: e.clientY };
     this._chargeStartY = e.clientY;
     this.pullDistance = 0;
     this.cuePull = 0;
-    this.onPullChange?.(0);
+    if (this.charging) this.onPullChange?.(0);
   }
 
   _move(e) {
@@ -113,6 +115,7 @@ export class Controls {
     const dx = e.clientX - this._last.x;
     this.aimAngle -= dx * 0.006 * sens;
     this._last = { x: e.clientX, y: e.clientY };
+    if (this.aimOnly) return;
     const pull = Math.max(0, e.clientY - this._chargeStartY);
     if (pull > this.pullDistance) {
       this.pullDistance = pull;
@@ -140,6 +143,7 @@ export class Controls {
     if (this.charging && this.enabled && this.draggingAim && this.pullDistance > 12) {
       this.charging = false;
       this.draggingAim = false;
+      this.aimOnly = false;
       this.onShoot?.(this.cuePull);
       this.cuePull = 0;
       this.onPullChange?.(0);
@@ -147,6 +151,7 @@ export class Controls {
     }
     this.charging = false;
     this.draggingAim = false;
+    this.aimOnly = false;
     this.pullDistance = 0;
     this.cuePull = 0;
     this.onPullChange?.(0);

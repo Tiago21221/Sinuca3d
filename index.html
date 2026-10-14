@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
-    <meta name="theme-color" content="#0b1410" />
+    <meta name="theme-color" content="#09110e" />
     <title>Sinuquinha — Sinuca 3D</title>
     <link rel="stylesheet" href="./css/style.css" />
     <link rel="stylesheet" href="./css/menu.css" />
@@ -15,24 +15,47 @@
 
       <div id="hud" hidden>
         <div class="topbar">
-          <div class="player-card" id="hudP1">
-            <div class="player-heading"><span class="player-avatar" aria-hidden="true"></span><div class="player-info"><div class="name">—</div><div class="meta"></div></div></div>
+          <div class="player-card" id="hudP1" aria-label="Jogador 1">
+            <div class="player-heading"><span class="player-avatar" aria-hidden="true"></span><div class="player-info"><div class="player-label">JOGADOR 1</div><div class="name">—</div><div class="meta"></div></div></div>
             <div class="ball-rack" aria-label="Bolas restantes"></div>
           </div>
-          <div class="mode-chip"><div id="hudMode"></div><div id="hudTurn"></div></div>
-          <div class="player-card player-card-right" id="hudP2">
-            <div class="player-heading"><span class="player-avatar" aria-hidden="true"></span><div class="player-info"><div class="name">—</div><div class="meta"></div></div></div>
+          <div class="mode-chip" aria-live="polite"><span class="table-mark" aria-hidden="true"></span><div class="mode-details"><div id="hudMode"></div><div id="hudTurn"></div></div></div>
+          <div class="player-card player-card-right" id="hudP2" aria-label="Jogador 2">
+            <div class="player-heading"><span class="player-avatar" aria-hidden="true"></span><div class="player-info"><div class="player-label">JOGADOR 2</div><div class="name">—</div><div class="meta"></div></div></div>
             <div class="ball-rack" aria-label="Bolas restantes"></div>
           </div>
           <div class="header-actions">
-            <button class="history-toggle ghost" type="button" data-history-toggle aria-expanded="false"><span aria-hidden="true">▤</span><span data-i18n="history">Histórico</span></button>
-            <button class="icon-btn ghost" data-pause-action="pause" data-i18n="pause">Pausar</button>
+            <button class="history-toggle ghost" type="button" data-history-toggle aria-expanded="false" aria-label="Histórico" title="Histórico"><span aria-hidden="true">≡</span><span data-i18n="history">Histórico</span></button>
+            <button class="icon-btn ghost" type="button" data-pause-action="pause" aria-label="Pausar" title="Pausar"><span aria-hidden="true">Ⅱ</span></button>
           </div>
         </div>
         <aside class="history-box" id="historyPanel" hidden>
           <div class="history-heading"><h4 data-i18n="history">Histórico</h4><button type="button" class="history-close ghost" data-history-toggle aria-label="Fechar histórico">×</button></div>
           <ul id="hudHistory"></ul>
         </aside>
+        <div id="toast"></div>
+        <div class="cam-dock" aria-label="Controles da câmera">
+          <button type="button" data-cam="in" title="Aproximar" aria-label="Aproximar câmera">+</button>
+          <button type="button" data-cam="out" title="Afastar" aria-label="Afastar câmera">−</button>
+          <button type="button" data-cam="left" title="Girar para a esquerda" aria-label="Girar câmera para a esquerda">‹</button>
+          <button type="button" data-cam="right" title="Girar para a direita" aria-label="Girar câmera para a direita">›</button>
+          <button type="button" data-cam="angle" data-i18n="viewAngle" title="Mudar ângulo">Ângulo</button>
+          <button type="button" data-cam="reset" data-i18n="camReset" title="Redefinir câmera">Câmera</button>
+          <button class="fullscreen-btn" type="button" data-fullscreen aria-label="Tela cheia" title="Tela cheia" aria-pressed="false"><span aria-hidden="true">⛶</span><span data-i18n="fullscreen">Tela cheia</span></button>
+        </div>
+        <div class="control-console">
+          <div class="aim-dock" id="aimDock">
+            <div class="power-control">
+              <div class="power-heading">
+                <span data-i18n="power">Força</span>
+                <output id="powerValue" for="powerSlider">42%</output>
+              </div>
+              <input id="powerSlider" type="range" min="0.08" max="1" step="0.01" value="0.42" aria-label="Força da tacada" />
+            </div>
+            <button class="shoot" data-shoot aria-label="Executar tacada"><span class="shoot-icon" aria-hidden="true">↗</span><span data-i18n="shoot">Tacada</span></button>
+            <small class="keyboard-hint" data-i18n="keyboardHelp"></small>
+          </div>
+        </div>
         <div class="spin-dock">
           <span data-i18n="spin">Efeito</span>
           <button
@@ -44,26 +67,6 @@
           >
             <span class="spin-dot" aria-hidden="true"></span>
           </button>
-        </div>
-        <div id="toast"></div>
-        <div class="cam-dock">
-          <button data-cam="in" title="Zoom +">+</button>
-          <button data-cam="out" title="Zoom -">−</button>
-          <button data-cam="left">‹</button>
-          <button data-cam="right">›</button>
-          <button data-cam="angle" data-i18n="viewAngle">Ângulo</button>
-          <button data-cam="reset" data-i18n="camReset">Câmera</button>
-        </div>
-        <div class="aim-dock" id="aimDock">
-          <div class="power-control">
-            <div class="power-heading">
-              <span data-i18n="power">Força</span>
-              <output id="powerValue" for="powerSlider">42%</output>
-            </div>
-            <input id="powerSlider" type="range" min="0.08" max="1" step="0.01" value="0.42" />
-          </div>
-          <button class="shoot" data-shoot data-i18n="shoot"><span class="shoot-icon" aria-hidden="true">➤</span><span>Tacada</span></button>
-          <small class="keyboard-hint" data-i18n="keyboardHelp"></small>
         </div>
         <div class="place-dock" id="placeDock" hidden>
           <small data-i18n="ballInHand">Bola na mão</small>
