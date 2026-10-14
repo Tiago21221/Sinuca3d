@@ -1,0 +1,85 @@
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import Peer from "peerjs";
+import { MultiplayerSession } from "../js/multiplayer.js";
+
+vi.mock("peerjs", () => ({ default: vi.fn() }));
+
+function createEmitter(methods = {}) {
+  const listeners = new Map();
+  return {
+    on(event, callback) {
+      const callbacks = listeners.get(event) || [];
+      callbacks.push(callback);
+      listeners.set(event, callbacks);
+      return this;
+    },
+    emit(event, ...args) {
+      for (const callback of listeners.get(event) || []) callback(...args);
+    },
+    ...methods,
+  };
+}
+
+describe("conexão entre dispositivos", () => {
+  let peer;
+  let connection;
+
+  beforeEach(() => {
+    vi.useFakeTimers();
+    connection = createEmitter({
+      open: false,
+      send: vi.fn(),
+      close: vi.fn(),
+    });
+    peer = createEmitter({
+      destroy: vi.fn(),
+      connect: vi.fn(() => connection),
+    });
+    Peer.mockReturnValue(peer);
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+    vi.clearAllMocks();
+  });
+
+  it("encerra uma tentativa que fica presa ao abrir o canal WebRTC", () => {
+    const onStatus = vi.fn();
+    const session = new MultiplayerSession({ onStatus });
+
+    session.join("abc234");
+    peer.emit("open");
+    vi.advanceTimersByTime(30000);
+
+    expect(onStatus).toHaveBeenCalledWith("timeout", undefined);
+    expect(peer.destroy).toHaveBeenCalledOnce();
+    expect(connection.close).toHaveBeenCalledOnce();
+  });
+
+  it("limpa o timeout e envia a entrada quando o canal abre", () => {
+    const onStatus = vi.fn();
+    const session = new MultiplayerSession({ onStatus });
+
+    session.join("abc234");
+    peer.emit("open");
+    connection.open = true;
+    connection.emit("open");
+    vi.advanceTimersByTime(30000);
+
+    expect(onStatus).toHaveBeenCalledWith("connected");
+    expect(onStatus).not.toHaveBeenCalledWith("timeout", expect.anything());
+    expect(connection.send).toHaveBeenCalledWith({ type: "join" });
+    expect(peer.destroy).not.toHaveBeenCalled();
+  });
+
+  it("só informa que a sala está pronta depois do registro no servidor", () => {
+    const onStatus = vi.fn();
+    const session = new MultiplayerSession({ onStatus });
+
+    session.host("abc234");
+    expect(onStatus).toHaveBeenCalledWith("connecting");
+
+    peer.emit("open");
+    expect(onStatus).toHaveBeenLastCalledWith("waiting");
+  });
+});

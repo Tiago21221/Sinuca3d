@@ -124,6 +124,13 @@ if (!renderer) {
         if (status === "connected") {
           game.networkConnected = true;
           ui.setOnlineStatus("onlineConnected");
+        } else if (status === "waiting") {
+          ui.setOnlineStatus("onlineWaiting");
+        } else if (status === "connecting") {
+          ui.setOnlineStatus("onlineConnecting");
+        } else if (status === "timeout") {
+          game.networkConnected = false;
+          ui.setOnlineStatus("onlineTimeout");
         } else if (status === "error") {
           game.networkConnected = false;
           ui.setOnlineStatus("onlineConnectionError", error?.message || "");

@@ -74,7 +74,7 @@ Ficam só neste navegador, via LocalStorage. Não são enviadas nem sincronizada
 
 ## Partida online
 
-Em **Jogar**, selecione **2 jogadores (dispositivos diferentes)**. O anfitrião escolhe a modalidade, cria uma sala e compartilha o código de seis caracteres; o outro jogador informa esse código no próprio aparelho. A conexão da partida é ponto a ponto via WebRTC. O PeerJS Cloud é usado apenas para sinalizar a conexão, portanto os dois aparelhos precisam estar online; redes com bloqueios de WebRTC podem impedir a conexão. O jogo e a publicação continuam estáticos no GitHub Pages, sem servidor próprio.
+Em **Jogar**, selecione **2 jogadores (dispositivos diferentes)**. O anfitrião escolhe a modalidade, cria uma sala e compartilha o código de seis caracteres; o outro jogador informa esse código no próprio aparelho. Aguarde o anfitrião ver **Aguardando outro jogador** antes de inserir o código no segundo aparelho. A conexão da partida é ponto a ponto via WebRTC. O PeerJS Cloud é usado apenas para sinalizar a conexão, portanto os dois aparelhos precisam estar online; redes com bloqueios de WebRTC podem impedir a conexão. Se a sinalização ou o canal WebRTC não abrir em até 30 segundos, a tentativa termina com uma mensagem para conferir o código e a sala. O jogo e a publicação continuam estáticos no GitHub Pages, sem servidor próprio.
 
 ## Estrutura
 

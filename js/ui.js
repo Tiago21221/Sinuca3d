@@ -175,7 +175,7 @@ export class UI {
       roomCode.hidden = !hosting;
     }
     if (copyButton) copyButton.hidden = !hosting;
-    this.setOnlineStatus(hosting ? "onlineWaiting" : "onlineConnecting");
+    this.setOnlineStatus("onlineConnecting");
     this.showScreen("screen-online");
   }
 
