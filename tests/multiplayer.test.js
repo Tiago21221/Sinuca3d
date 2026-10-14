@@ -72,26 +72,44 @@ describe("conexão entre dispositivos", () => {
     expect(peer.destroy).not.toHaveBeenCalled();
   });
 
-  it("só informa que a sala está pronta depois do registro no servidor", () => {
+  it("só informa que a sala está pronta depois do registro no servidor", async () => {
     const onStatus = vi.fn();
     const session = new MultiplayerSession({ onStatus });
 
-    session.host("abc234");
+    await session.host("abc234");
     expect(onStatus).toHaveBeenCalledWith("connecting");
 
     peer.emit("open");
     expect(onStatus).toHaveBeenLastCalledWith("waiting");
   });
 
-  it("informa a falha quando o canal fecha antes de conectar", () => {
+  it("informa a falha quando o canal fecha antes de conectar", async () => {
     const onStatus = vi.fn();
     const session = new MultiplayerSession({ onStatus });
 
-    session.join("abc234");
+    await session.join("abc234");
     peer.emit("open");
     connection.emit("close");
 
     expect(onStatus).toHaveBeenCalledWith("error", expect.any(Error));
     expect(peer.destroy).toHaveBeenCalledOnce();
+  });
+
+  it("allows direct ICE connections while keeping TURN relays available", async () => {
+    const session = new MultiplayerSession({ onStatus: vi.fn() });
+
+    await session.host("abc234");
+
+    const options = Peer.mock.calls[0][1];
+    expect(options.config.iceTransportPolicy).toBe("all");
+    expect(options.config.iceServers).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ urls: "stun:stun.l.google.com:19302" }),
+        expect.objectContaining({
+          username: "peerjs",
+          credential: "peerjsp",
+        }),
+      ])
+    );
   });
 });

@@ -3,6 +3,19 @@ import Peer from "peerjs";
 const PEER_PREFIX = "sinuq-";
 const ROOM_ALPHABET = "23456789abcdefghjkmnpqrstuvwxyz";
 const CONNECTION_TIMEOUT_MS = 30000;
+const PEERJS_ICE_SERVERS = [
+  { urls: "stun:stun.l.google.com:19302" },
+  {
+    urls: [
+      "turn:eu-0.turn.peerjs.com:3478?transport=udp",
+      "turn:eu-0.turn.peerjs.com:3478?transport=tcp",
+      "turn:us-0.turn.peerjs.com:3478?transport=udp",
+      "turn:us-0.turn.peerjs.com:3478?transport=tcp",
+    ],
+    username: "peerjs",
+    credential: "peerjsp",
+  },
+];
 const OPEN_RELAY_HOST = "staticauth.openrelay.metered.ca";
 const OPEN_RELAY_SECRET = "openrelayprojectsecret";
 const TURN_CREDENTIAL_TTL_SECONDS = 60 * 60;
@@ -61,18 +74,16 @@ async function createPeerOptions() {
     // by our serverless function. It is the reliable production path.
     iceServers = await fetchManagedIceServers();
   } catch {
-    // The public Open Relay fallback keeps existing deployments functional
-    // until the managed credentials have been configured.
+    // Keep a public TURN fallback for deployments without managed credentials.
     iceServers = await createOpenRelayIceServers();
   }
 
   return {
     config: {
-      // The game exchanges very little data, so favor a TURN relay over a
-      // fragile direct route. This is what makes players on different NATs,
-      // mobile networks, or distant Wi-Fi networks connect consistently.
-      iceTransportPolicy: "relay",
-      iceServers,
+      // Prefer a direct path when possible; TURN-only mode prevents even
+      // same-network connections whenever a public relay is unreachable.
+      iceTransportPolicy: "all",
+      iceServers: [...PEERJS_ICE_SERVERS, ...iceServers],
       sdpSemantics: "unified-plan",
     },
   };
