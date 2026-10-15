@@ -23,6 +23,14 @@ async function prepareDatabase(sql) {
 }
 
 function parseBody(body) { return typeof body === "string" ? JSON.parse(body) : body || {}; }
+function decodePayload(payload) {
+  if (typeof payload !== "string") return payload;
+  try {
+    return JSON.parse(payload);
+  } catch {
+    return null;
+  }
+}
 
 export default async function handler(request, response) {
   setCors(request, response);
@@ -64,7 +72,13 @@ export default async function handler(request, response) {
     if (action === "poll") {
       const after = Math.max(0, Number.parseInt(input.after, 10) || 0);
       const events = await sql`SELECT id, sender_id, payload FROM sinuq_events WHERE room_code = ${code} AND id > ${after} AND (recipient_id IS NULL OR recipient_id = ${clientId}) ORDER BY id ASC LIMIT 50`;
-      return response.status(200).json({ events: events.map((event) => ({ id: event.id, sender: event.sender_id, payload: event.payload })) });
+      return response.status(200).json({
+        events: events.map((event) => ({
+          id: event.id,
+          sender: event.sender_id,
+          payload: decodePayload(event.payload),
+        })),
+      });
     }
     return response.status(400).json({ error: "Ação inválida." });
   } catch (error) {

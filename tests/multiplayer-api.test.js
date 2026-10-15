@@ -38,4 +38,19 @@ describe("API de partidas", () => {
     expect(neon).toHaveBeenCalledWith("postgresql://secret");
     expect(response.headers["Access-Control-Allow-Origin"]).toBe("https://tiago21221.github.io");
   });
+
+  it("converte o jsonb retornado pelo Neon em mensagem para o navegador", async () => {
+    vi.stubEnv("NEON_DATABASE_URL", "postgresql://secret");
+    const sql = vi.fn();
+    sql.mockResolvedValueOnce([]).mockResolvedValueOnce([]).mockResolvedValueOnce([]).mockResolvedValueOnce([])
+      .mockResolvedValueOnce([{ host_id: "a".repeat(32), join_id: "b".repeat(32) }])
+      .mockResolvedValueOnce([{ id: 3, sender_id: "a".repeat(32), payload: '{"type":"match-config"}' }]);
+    neon.mockReturnValue(sql);
+    const response = createResponse();
+
+    await handler({ method: "GET", headers: {}, query: { action: "poll", code: "abc234", clientId: "b".repeat(32), after: "0" } }, response);
+
+    expect(response.statusCode).toBe(200);
+    expect(response.body.events[0].payload).toEqual({ type: "match-config" });
+  });
 });
