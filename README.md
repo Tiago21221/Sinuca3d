@@ -74,7 +74,17 @@ Ficam só neste navegador, via LocalStorage. Não são enviadas nem sincronizada
 
 ## Partida online
 
-Em **Jogar**, selecione **2 jogadores (dispositivos diferentes)**. O anfitrião escolhe a modalidade, cria uma sala e compartilha o código de seis caracteres; o outro jogador informa esse código no próprio aparelho. Aguarde o anfitrião ver **Aguardando outro jogador** antes de inserir o código no segundo aparelho. O PeerJS Cloud sinaliza a partida; WebRTC tenta conexão direta e usa TURN como relay entre redes diferentes. A API TURN fica na Vercel e é compartilhada pelo site Vercel e pelo GitHub Pages. Configure `CLOUDFLARE_TURN_KEY_ID` e `CLOUDFLARE_TURN_API_TOKEN` nas variáveis de ambiente da Vercel; sem elas, o jogo avisa que a conexão entre redes diferentes pode falhar. Se o canal não abrir em até 30 segundos, confira o código e o relay TURN. O jogo não armazena credenciais TURN no navegador.
+Em **Jogar**, selecione **2 jogadores (dispositivos diferentes)**. O anfitrião escolhe a modalidade, cria uma sala e compartilha o código de seis caracteres; o outro jogador informa esse código no próprio aparelho. Aguarde o anfitrião ver **Aguardando outro jogador** antes de inserir o código no segundo aparelho. O PeerJS Cloud sinaliza a partida; WebRTC tenta conexão direta e usa TURN como relay entre redes diferentes.
+
+### Multiplayer com Neon, sem VPN
+
+As ações da partida passam por uma API da Vercel e por um banco Neon, então jogadores em Wi-Fi diferentes não dependem de WebRTC, portas abertas, VPN ou servidor próprio. O GitHub Pages usa essa mesma API publicada na Vercel.
+
+1. Crie um projeto gratuito no [Neon](https://neon.com/) e copie a **Pooled connection string** em **Connect**. Ela começa com `postgresql://`; a URL `.../rest/v1` não serve para esta configuração.
+2. Na Vercel, abra **Settings → Environment Variables** e adicione `NEON_DATABASE_URL` para **Production** e **Preview**. Cole a connection string como valor; ela é secreta e nunca deve ir para o GitHub ou o navegador.
+3. Faça um novo deploy na Vercel. A primeira partida cria automaticamente as tabelas necessárias no Neon.
+
+O plano gratuito do Neon não pede cartão. As salas expiram automaticamente depois de quatro horas. O relay usa HTTPS e consulta novas ações a cada 0,9 segundo, adequado para a modalidade por turnos.
 
 ## Estrutura
 

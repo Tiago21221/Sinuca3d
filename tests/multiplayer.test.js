@@ -1,42 +1,15 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import Peer from "peerjs";
 import { MultiplayerSession } from "../js/multiplayer.js";
 
-vi.mock("peerjs", () => ({ default: vi.fn() }));
-
-function createEmitter(methods = {}) {
-  const listeners = new Map();
-  return {
-    on(event, callback) {
-      const callbacks = listeners.get(event) || [];
-      callbacks.push(callback);
-      listeners.set(event, callbacks);
-      return this;
-    },
-    emit(event, ...args) {
-      for (const callback of listeners.get(event) || []) callback(...args);
-    },
-    ...methods,
-  };
+function jsonResponse(payload, ok = true) {
+  return { ok, json: vi.fn().mockResolvedValue(payload) };
 }
 
 describe("conexão entre dispositivos", () => {
-  let peer;
-  let connection;
-
   beforeEach(() => {
     vi.useFakeTimers();
-    vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: false }));
-    connection = createEmitter({
-      open: false,
-      send: vi.fn(),
-      close: vi.fn(),
-    });
-    peer = createEmitter({
-      destroy: vi.fn(),
-      connect: vi.fn(() => connection),
-    });
-    Peer.mockReturnValue(peer);
+    vi.stubGlobal("window", { location: { hostname: "sinuca3d.vercel.app", href: "https://sinuca3d.vercel.app/" } });
+    vi.stubGlobal("fetch", vi.fn());
   });
 
   afterEach(() => {
@@ -45,73 +18,48 @@ describe("conexão entre dispositivos", () => {
     vi.clearAllMocks();
   });
 
-  it("encerra uma tentativa que fica presa ao abrir o canal WebRTC", async () => {
+  it("conecta o anfitrião quando recebe a entrada do outro jogador", async () => {
+    fetch
+      .mockResolvedValueOnce(jsonResponse({ ok: true }))
+      .mockResolvedValueOnce(jsonResponse({ events: [{ id: 1, sender: "b".repeat(32), payload: { type: "join" } }] }));
     const onStatus = vi.fn();
-    const session = new MultiplayerSession({ onStatus });
-
-    await session.join("abc234");
-    peer.emit("open");
-    vi.advanceTimersByTime(30000);
-
-    expect(onStatus).toHaveBeenCalledWith("timeout", undefined);
-    expect(peer.destroy).toHaveBeenCalledOnce();
-    expect(connection.close).toHaveBeenCalledOnce();
-  });
-
-  it("limpa o timeout e envia a entrada quando o canal abre", async () => {
-    const onStatus = vi.fn();
-    const session = new MultiplayerSession({ onStatus });
-
-    await session.join("abc234");
-    peer.emit("open");
-    connection.open = true;
-    connection.emit("open");
-    vi.advanceTimersByTime(30000);
-
-    expect(onStatus).toHaveBeenCalledWith("connected");
-    expect(onStatus).not.toHaveBeenCalledWith("timeout", expect.anything());
-    expect(connection.send).toHaveBeenCalledWith({ type: "join" });
-    expect(peer.destroy).not.toHaveBeenCalled();
-  });
-
-  it("só informa que a sala está pronta depois do registro no servidor", async () => {
-    const onStatus = vi.fn();
-    const session = new MultiplayerSession({ onStatus });
+    const onMessage = vi.fn();
+    const session = new MultiplayerSession({ onStatus, onMessage });
 
     await session.host("abc234");
-    expect(onStatus).toHaveBeenCalledWith("connecting");
+    await vi.runAllTicks();
 
-    peer.emit("open");
-    expect(onStatus).toHaveBeenLastCalledWith("waiting");
+    expect(onStatus).toHaveBeenCalledWith("waiting");
+    expect(onStatus).toHaveBeenCalledWith("connected");
+    expect(onMessage).toHaveBeenCalledWith({ type: "join" });
+    expect(fetch.mock.calls[0][0].toString()).toContain("action=create");
   });
 
-  it("informa a falha quando o canal fecha antes de conectar", async () => {
+  it("encerra a entrada quando nenhum anfitrião responde", async () => {
+    fetch.mockResolvedValue(jsonResponse({ events: [] }));
     const onStatus = vi.fn();
     const session = new MultiplayerSession({ onStatus });
 
     await session.join("abc234");
-    peer.emit("open");
-    connection.emit("close");
+    await vi.advanceTimersByTimeAsync(30000);
 
-    expect(onStatus).toHaveBeenCalledWith("error", expect.any(Error));
-    expect(peer.destroy).toHaveBeenCalledOnce();
+    expect(onStatus).toHaveBeenCalledWith("timeout", undefined);
   });
 
-  it("allows direct ICE connections while keeping TURN relays available", async () => {
+  it("publica mensagens da partida pelo relay HTTPS", async () => {
+    fetch
+      .mockResolvedValueOnce(jsonResponse({ ok: true }))
+      .mockResolvedValueOnce(jsonResponse({ events: [{ id: 1, sender: "b".repeat(32), payload: { type: "join" } }] }))
+      .mockResolvedValueOnce(jsonResponse({ ok: true }));
     const session = new MultiplayerSession({ onStatus: vi.fn() });
 
     await session.host("abc234");
+    await vi.runAllTicks();
+    session.send({ type: "shot", shot: { power: 0.5 } });
+    await vi.runAllTicks();
 
-    const options = Peer.mock.calls[0][1];
-    expect(options.config.iceTransportPolicy).toBe("all");
-    expect(options.config.iceServers).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({ urls: "stun:stun.l.google.com:19302" }),
-        expect.objectContaining({
-          username: "peerjs",
-          credential: "peerjsp",
-        }),
-      ])
-    );
+    const request = fetch.mock.calls.find(([url]) => url.toString().includes("action=event"));
+    expect(request[1]).toMatchObject({ method: "POST" });
+    expect(JSON.parse(request[1].body).payload).toEqual({ type: "shot", shot: { power: 0.5 } });
   });
 });

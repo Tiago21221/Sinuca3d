@@ -130,7 +130,9 @@ if (!renderer) {
         } else if (status === "connecting") {
           ui.setOnlineStatus("onlineConnecting");
         } else if (status === "relay-unavailable") {
-          ui.setOnlineWarning("onlineRelayUnavailable");
+          game.networkConnected = false;
+          ui.setOnlineStatus("onlineRelayUnavailable");
+          ui.setOnlineWarning("");
         } else if (status === "timeout") {
           game.networkConnected = false;
           ui.setOnlineStatus("onlineTimeout");

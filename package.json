@@ -11,8 +11,8 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@neondatabase/serverless": "^1.0.2",
     "cannon-es": "^0.20.0",
-    "peerjs": "^1.5.5",
     "three": "^0.170.0"
   },
   "devDependencies": {
