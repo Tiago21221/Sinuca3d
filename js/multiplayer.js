@@ -1,5 +1,5 @@
 const ROOM_ALPHABET = "23456789abcdefghjkmnpqrstuvwxyz";
-const CONNECTION_TIMEOUT_MS = 30000;
+const CONNECTION_TIMEOUT_MS = 60000;
 const POLL_INTERVAL_MS = 900;
 const RELAY_API_ORIGIN = "https://sinuca3d.vercel.app";
 
