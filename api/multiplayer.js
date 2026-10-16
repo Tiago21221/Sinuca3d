@@ -4,10 +4,20 @@ const ALLOWED_ORIGINS = new Set(["https://tiago21221.github.io", "https://sinuca
 const ROOM_CODE = /^[23456789abcdefghjkmnpqrstuvwxyz]{6}$/;
 const CLIENT_ID = /^[a-f0-9]{32}$/;
 
+function isAllowedOrigin(origin) {
+  if (ALLOWED_ORIGINS.has(origin)) return true;
+  try {
+    const url = new URL(origin);
+    return url.protocol === "https:" && (url.hostname.endsWith(".vercel.app") || url.hostname.endsWith(".github.io"));
+  } catch {
+    return false;
+  }
+}
+
 function setCors(request, response) {
   const origin = request.headers.origin;
   response.setHeader("Vary", "Origin");
-  if (ALLOWED_ORIGINS.has(origin)) response.setHeader("Access-Control-Allow-Origin", origin);
+  if (isAllowedOrigin(origin)) response.setHeader("Access-Control-Allow-Origin", origin);
   response.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
   response.setHeader("Access-Control-Allow-Headers", "Content-Type");
 }
