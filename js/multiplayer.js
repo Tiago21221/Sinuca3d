@@ -1,6 +1,8 @@
 const ROOM_ALPHABET = "23456789abcdefghjkmnpqrstuvwxyz";
-const CONNECTION_TIMEOUT_MS = 60000;
-const POLL_INTERVAL_MS = 900;
+const CONNECTION_TIMEOUT_MS = 180000;
+const REQUEST_TIMEOUT_MS = 20000;
+const POLL_INTERVAL_MS = 700;
+const MAX_POLL_INTERVAL_MS = 5000;
 const RELAY_API_ORIGIN = "https://sinuca3d.vercel.app";
 
 function getRelayEndpoint() {
@@ -19,15 +21,22 @@ async function relayRequest(action, { method = "GET", body, params = {} } = {}) 
   const url = new URL(getRelayEndpoint(), baseUrl);
   url.searchParams.set("action", action);
   for (const [key, value] of Object.entries(params)) url.searchParams.set(key, String(value));
-  const response = await fetch(url, {
-    method,
-    headers: body ? { "Content-Type": "application/json" } : undefined,
-    body: body ? JSON.stringify(body) : undefined,
-    cache: "no-store",
-  });
-  const payload = await response.json().catch(() => ({}));
-  if (!response.ok) throw new Error(payload.error || "O servidor da partida não respondeu.");
-  return payload;
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+  try {
+    const response = await fetch(url, {
+      method,
+      headers: body ? { "Content-Type": "application/json" } : undefined,
+      body: body ? JSON.stringify(body) : undefined,
+      cache: "no-store",
+      signal: controller.signal,
+    });
+    const payload = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(payload.error || "O servidor da partida não respondeu.");
+    return payload;
+  } finally {
+    clearTimeout(timeout);
+  }
 }
 
 export function createRoomCode() {
@@ -47,6 +56,7 @@ export class MultiplayerSession {
     this.after = 0;
     this.timeout = null;
     this.pollTimer = null;
+    this.pollDelay = POLL_INTERVAL_MS;
     this.closed = false;
   }
 
@@ -55,7 +65,7 @@ export class MultiplayerSession {
     this.code = code;
     this.onStatus?.("connecting");
     try {
-      await relayRequest("create", { method: "POST", body: { code, clientId: this.clientId } });
+      await this._requestWithRetry("create", { method: "POST", body: { code, clientId: this.clientId } });
       if (this.closed) return;
       this.onStatus?.("waiting");
       await this._poll();
@@ -70,7 +80,7 @@ export class MultiplayerSession {
     this.onStatus?.("connecting");
     this._setTimeout();
     try {
-      await relayRequest("join", { method: "POST", body: { code, clientId: this.clientId } });
+      await this._requestWithRetry("join", { method: "POST", body: { code, clientId: this.clientId } });
       if (this.closed) return;
       await this._poll();
     } catch (error) {
@@ -84,6 +94,7 @@ export class MultiplayerSession {
       const { events = [] } = await relayRequest("poll", {
         params: { code: this.code, clientId: this.clientId, after: this.after },
       });
+      this.pollDelay = POLL_INTERVAL_MS;
       for (const event of events) {
         this.after = Math.max(this.after, Number(event.id) || 0);
         if (event.sender === this.clientId || !event.payload) continue;
@@ -92,12 +103,30 @@ export class MultiplayerSession {
       }
       this._schedulePoll();
     } catch (error) {
-      if (!this.closed) this._schedulePoll();
+      if (!this.closed) {
+        this.pollDelay = Math.min(this.pollDelay * 1.7, MAX_POLL_INTERVAL_MS);
+        this._schedulePoll();
+      }
     }
   }
 
+  async _requestWithRetry(action, options, attempts = 4) {
+    let lastError;
+    for (let attempt = 0; attempt < attempts && !this.closed; attempt += 1) {
+      try {
+        return await relayRequest(action, options);
+      } catch (error) {
+        lastError = error;
+        if (attempt + 1 < attempts) {
+          await new Promise((resolve) => setTimeout(resolve, Math.min(1000 * 2 ** attempt, 5000)));
+        }
+      }
+    }
+    throw lastError || new Error("A conexão não pôde ser iniciada.");
+  }
+
   _schedulePoll() {
-    if (!this.closed) this.pollTimer = setTimeout(() => this._poll(), POLL_INTERVAL_MS);
+    if (!this.closed) this.pollTimer = setTimeout(() => this._poll(), this.pollDelay);
   }
 
   _markConnected() {
