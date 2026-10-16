@@ -33,7 +33,7 @@ function prepareDatabase(sql) {
     databaseReadySql = sql;
     databaseReady = (async () => {
       await sql`CREATE TABLE IF NOT EXISTS sinuq_rooms (code varchar(6) PRIMARY KEY, host_id varchar(32) NOT NULL, join_id varchar(32), expires_at timestamptz NOT NULL DEFAULT now() + interval '4 hours')`;
-      await sql`CREATE TABLE IF NOT EXISTS sinuq_events (id bigserial PRIMARY KEY, room_code varchar(6) NOT NULL REFERENCES sinuq_rooms(code) ON DELETE CASCADE, sender_id varchar(32) NOT NULL, recipient_id varchar(32), payload jsonb NOT NULL, created_at timestamptz NOT NULL DEFAULT now()`;
+      await sql`CREATE TABLE IF NOT EXISTS sinuq_events (id bigserial PRIMARY KEY, room_code varchar(6) NOT NULL REFERENCES sinuq_rooms(code) ON DELETE CASCADE, sender_id varchar(32) NOT NULL, recipient_id varchar(32), payload jsonb NOT NULL, created_at timestamptz NOT NULL DEFAULT now())`;
       await sql`CREATE INDEX IF NOT EXISTS sinuq_events_room_id ON sinuq_events(room_code, id)`;
       await sql`DELETE FROM sinuq_rooms WHERE expires_at < now()`;
     })().catch((error) => {
