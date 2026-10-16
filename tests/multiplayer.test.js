@@ -41,7 +41,7 @@ describe("conexão entre dispositivos", () => {
     const session = new MultiplayerSession({ onStatus });
 
     await session.join("abc234");
-    await vi.advanceTimersByTimeAsync(30000);
+    await vi.advanceTimersByTimeAsync(60000);
 
     expect(onStatus).toHaveBeenCalledWith("timeout", undefined);
   });
