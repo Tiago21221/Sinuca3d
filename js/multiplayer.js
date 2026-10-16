@@ -92,7 +92,7 @@ export class MultiplayerSession {
       }
       this._schedulePoll();
     } catch (error) {
-      this._fail("error", error);
+      if (!this.closed) this._schedulePoll();
     }
   }
 
