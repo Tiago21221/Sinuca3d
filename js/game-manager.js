@@ -181,7 +181,8 @@ export class GameManager {
     aiming || this.phase === "stroke",
     this.ui.power,
     pull,
-    this.ui.cueElevation
+    this.ui.cueElevation,
+    this.ui.spin
   );
       const aimEnabled = this.config?.aimAssist ?? this.settings.aimAssist;
       updateAimLine(
