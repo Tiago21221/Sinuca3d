@@ -546,6 +546,7 @@ export class UI {
 
     document.documentElement.requestFullscreen?.().catch(() => {});
     screen.orientation?.lock?.("landscape").catch(() => {});
+    this._setMobileControlsOpen(true);
   }
 
   toggleFullscreen() {
