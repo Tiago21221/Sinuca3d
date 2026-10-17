@@ -399,6 +399,50 @@
   .place-dock { bottom: max(64px, calc(env(safe-area-inset-bottom) + 54px)); }
 }
 
+/* Layout lateral estilo 8 Ball Pool: os controles ficam fora do centro da mesa. */
+@media (min-width: 901px) {
+  .control-console {
+    top: 50%;
+    right: auto;
+    bottom: auto;
+    left: max(18px, env(safe-area-inset-left));
+    width: 116px;
+    min-width: 0;
+    transform: translateY(-50%);
+  }
+
+  .aim-dock {
+    grid-template-columns: 1fr;
+    gap: 10px;
+    padding: 12px 10px;
+    border-radius: 17px;
+    background: linear-gradient(180deg, rgba(16, 27, 20, .96), rgba(7, 13, 10, .96));
+  }
+
+  .power-control { justify-items: center; }
+  .power-heading { justify-content: center; gap: 7px; width: 100%; }
+  #powerSlider {
+    width: 52px;
+    height: 156px;
+    writing-mode: vertical-lr;
+    direction: rtl;
+    touch-action: pan-y;
+  }
+  .cue-elevation { display: grid; gap: 4px; font-size: .62rem; text-align: center; }
+  #cueElevation { width: 100%; height: 24px; }
+  .shoot { width: 100%; min-height: 48px; padding-inline: 5px; font-size: .72rem; }
+  .keyboard-hint { display: none; }
+
+  .cam-dock {
+    top: 50%;
+    right: max(18px, env(safe-area-inset-right));
+    bottom: auto;
+    grid-template-columns: 1fr;
+    transform: translateY(-50%);
+  }
+  .fine-aim { order: 3; }
+}
+
 @media (max-width: 600px) and (orientation: landscape) {
   .topbar { gap: 5px; }
   .player-card { padding-block: 5px; }
