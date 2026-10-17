@@ -1169,6 +1169,72 @@
   }
 }
 
+/* Landscape mobile: keep every shot control in one compact, visible dock. */
+@media (max-width: 900px) and (orientation: landscape) {
+  .mobile-controls-panel {
+    display: block !important;
+    position: fixed !important;
+    left: max(10px, env(safe-area-inset-left)) !important;
+    right: auto !important;
+    bottom: max(8px, env(safe-area-inset-bottom)) !important;
+    width: 154px !important;
+    max-height: calc(100dvh - 16px - env(safe-area-inset-top) - env(safe-area-inset-bottom)) !important;
+    overflow: hidden;
+    padding: 8px !important;
+  }
+
+  .mobile-controls-panel .control-console {
+    display: block !important;
+    width: 100% !important;
+  }
+
+  .mobile-controls-panel .aim-dock {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 7px !important;
+    padding: 7px !important;
+  }
+
+  .mobile-controls-panel .spin-dock {
+    position: static !important;
+    inset: auto !important;
+    order: -1;
+    display: flex !important;
+    width: 100% !important;
+    min-height: 62px !important;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    padding: 4px 7px !important;
+  }
+
+  .mobile-controls-panel .spin-ball {
+    flex: 0 0 48px !important;
+    width: 48px !important;
+    height: 48px !important;
+  }
+
+  .mobile-controls-panel .power-control {
+    gap: 3px;
+  }
+
+  .mobile-controls-panel #powerSlider {
+    height: 106px !important;
+  }
+
+  .mobile-controls-panel .cue-elevation {
+    padding-top: 4px;
+  }
+
+  .mobile-controls-panel #cueElevation {
+    height: 22px !important;
+  }
+
+  .mobile-controls-panel .shoot {
+    min-height: 42px !important;
+  }
+}
+
 @media (max-width: 600px) and (orientation: portrait) {
   .mobile-controls-panel {
     right: 8px;
