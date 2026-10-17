@@ -470,6 +470,16 @@
   #toast { top: max(70px, calc(env(safe-area-inset-top) + 54px)); }
 }
 
+/* No mobile, a mesa inteira recebe os gestos: não sobreponha mira ou controles. */
+@media (max-width: 900px) {
+  .cam-dock,
+  .mobile-controls-panel,
+  .mobile-controls-actions,
+  .spin-dock {
+    display: none !important;
+  }
+}
+
 /* Controles estilo mesa mobile: áreas independentes, toque confortável e leitura imediata. */
 .fine-aim {
   display: flex;

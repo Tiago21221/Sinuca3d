@@ -294,6 +294,7 @@ export class UI {
     const playing = id === "screen-game";
     if (hud) hud.hidden = !playing;
     if (!playing) this._setMobileControlsOpen(false);
+    if (playing) this._enterMobileGameView();
     if (id === "screen-stats") this.renderStats();
     if (id === "screen-play") this._toggleModeExtras();
   }
@@ -537,6 +538,14 @@ export class UI {
       row(this.tx("bolinho"), stats.modes[MODES.BOLINHO]) +
       row(this.tx("eightBall"), stats.modes[MODES.EIGHT_BALL]) +
       row(this.tx("threeBalls"), stats.modes[MODES.THREE_BALLS]);
+  }
+
+  _enterMobileGameView() {
+    const isMobile = window.matchMedia?.("(max-width: 900px)").matches;
+    if (!isMobile) return;
+
+    document.documentElement.requestFullscreen?.().catch(() => {});
+    screen.orientation?.lock?.("landscape").catch(() => {});
   }
 
   toggleFullscreen() {
