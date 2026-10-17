@@ -27,6 +27,8 @@ export class Controls {
     this.cueElevation = 0;
     this.onPullChange = null;
     this.onElevationChange = null;
+    this.onSpinChange = null;
+    this.spin = { x: 0, y: 0 };
 
     canvas.addEventListener("pointerdown", (e) => this._down(e));
     canvas.addEventListener("pointermove", (e) => this._move(e));
@@ -124,8 +126,15 @@ export class Controls {
     if (!this.draggingAim || !this.enabled) return;
     const sens = this.settings.aimSensitivity || 1;
     const dx = e.clientX - this._last.x;
-    this.aimAngle -= dx * 0.006 * sens;
+    const dy = e.clientY - this._last.y;
     this._last = { x: e.clientX, y: e.clientY };
+    if (e.ctrlKey || this.keys.has("ControlLeft") || this.keys.has("ControlRight")) {
+      this.spin.x = clamp(this.spin.x + dx * 0.012, -1, 1);
+      this.spin.y = clamp(this.spin.y - dy * 0.012, -1, 1);
+      this.onSpinChange?.({ ...this.spin });
+      return;
+    }
+    this.aimAngle -= dx * (e.shiftKey ? 0.003 : 0.006) * sens;
     if (this.aimOnly) return;
     const pull = Math.max(0, e.clientY - this._chargeStartY);
     if (pull > this.pullDistance) {
@@ -201,11 +210,13 @@ export class Controls {
     const aimSpeed = 1.3 * dt * (this.settings.aimSensitivity || 1);
     if (this.keys.has("KeyA")) this.aimAngle += aimSpeed;
     if (this.keys.has("KeyD")) this.aimAngle -= aimSpeed;
-    const powerSpeed = 0.55 * dt;
-    if (this.keys.has("Keys")) this.power = clamp(this.power + powerSpeed, 0.08, 1);
-    if (this.keys.has("Keyw")) this.power = clamp(this.power - powerSpeed, 0.08, 1);
+    const elevationSpeed = 0.7 * dt;
+    const oldElevation = this.cueElevation;
+    if (this.keys.has("ArrowUp") || this.keys.has("KeyW")) this.cueElevation = clamp(this.cueElevation + elevationSpeed, 0, 1);
+    if (this.keys.has("ArrowDown") || this.keys.has("KeyS")) this.cueElevation = clamp(this.cueElevation - elevationSpeed, 0, 1);
     if (this.power !== oldPower) this.onPowerChange?.(this.power);
-    return this.aimAngle !== oldAngle || this.power !== oldPower;
+    if (this.cueElevation !== oldElevation) this.onElevationChange?.(this.cueElevation);
+    return this.aimAngle !== oldAngle || this.power !== oldPower || this.cueElevation !== oldElevation;
   }
 }
 

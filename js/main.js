@@ -158,12 +158,18 @@ if (!renderer) {
     const direction = controls.aimDirection();
     ui.aimDir = { x: direction.x, z: direction.z };
     game.shoot(pull);
+    ui.resetSpin?.();
+    controls.spin = { x: 0, y: 0 };
   };
   controls.onPullChange = (pull) => {
     game.cuePull = pull;
   };
   controls.onElevationChange = (elevation) => {
     ui.cueElevation = elevation;
+    ui.syncAimWidgets();
+  };
+  controls.onSpinChange = (spin) => {
+    ui._setSpin(spin.x, spin.y);
   };
   controls.onPause = () => handlePause("pause");
   controls.onOrbit = (dx, dy) => cameraRig.orbit(dx, dy);

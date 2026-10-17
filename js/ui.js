@@ -474,6 +474,10 @@ export class UI {
     );
   }
 
+  resetSpin() {
+    this._setSpin(0, 0);
+  }
+
   _setSpin(x, y) {
     this.spin.x = Math.max(-1, Math.min(1, x));
     this.spin.y = Math.max(-1, Math.min(1, y));
