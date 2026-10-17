@@ -575,6 +575,150 @@
   .mobile-controls-panel { bottom: calc(64px + env(safe-area-inset-bottom)); max-height: calc(100dvh - env(safe-area-inset-top) - 80px); }
 }
 
+/* Controle de mesa: console central inspirado em jogos de bilhar */
+@media (min-width: 901px) {
+  .control-console {
+    bottom: max(22px, env(safe-area-inset-bottom));
+    width: min(540px, calc(100% - 390px));
+    min-width: 430px;
+  }
+
+  .aim-dock {
+    grid-template-columns: minmax(0, 1fr) 132px;
+    gap: 18px;
+    padding: 15px 16px;
+    border-color: rgba(214, 183, 112, 0.24);
+    background: linear-gradient(145deg, rgba(18, 29, 23, 0.96), rgba(8, 14, 11, 0.95));
+  }
+
+  .power-control {
+    gap: 8px;
+  }
+
+  .power-heading {
+    color: #d6d0bd;
+    font-size: 0.7rem;
+    letter-spacing: 0.11em;
+    text-transform: uppercase;
+  }
+
+  #powerSlider {
+    height: 34px;
+  }
+
+  .shoot {
+    min-height: 54px;
+    border-radius: 14px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .spin-dock {
+    right: calc(50% + 282px);
+    bottom: max(22px, env(safe-area-inset-bottom));
+    width: 108px;
+    gap: 7px;
+    padding: 11px 10px;
+    border-color: rgba(214, 183, 112, 0.24);
+    background: linear-gradient(145deg, rgba(18, 29, 23, 0.96), rgba(8, 14, 11, 0.95));
+  }
+
+  .spin-dock > span::after {
+    display: block;
+    margin-top: 3px;
+    color: #7e9181;
+    content: "arraste o pino";
+    font-size: 0.52rem;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    text-transform: none;
+  }
+
+  .spin-ball {
+    width: 68px;
+    height: 68px;
+  }
+
+  .cam-dock {
+    right: max(24px, env(safe-area-inset-right));
+    gap: 7px;
+    padding: 10px;
+    border-color: rgba(214, 183, 112, 0.24);
+    background: linear-gradient(145deg, rgba(18, 29, 23, 0.96), rgba(8, 14, 11, 0.95));
+  }
+
+  .cam-dock::before {
+    grid-column: 1 / -1;
+    margin-bottom: 1px;
+    color: #d6b770;
+    content: "CÂMERA";
+    font-size: 0.56rem;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    text-align: center;
+  }
+}
+
+@media (max-width: 900px) {
+  .mobile-controls-panel {
+    width: min(206px, calc(100vw - 16px));
+    padding: 12px;
+    border-color: rgba(214, 183, 112, 0.3);
+    background: linear-gradient(155deg, rgba(17, 28, 22, 0.98), rgba(7, 13, 10, 0.98));
+  }
+
+  .mobile-controls-panel .control-console {
+    display: grid;
+    gap: 9px;
+  }
+
+  .mobile-controls-panel .aim-dock,
+  .mobile-controls-panel .spin-dock,
+  .mobile-controls-panel .cam-dock {
+    border-color: rgba(214, 183, 112, 0.18);
+    background: rgba(255, 255, 255, 0.035);
+  }
+
+  .mobile-controls-panel .aim-dock {
+    gap: 10px;
+    padding: 10px;
+  }
+
+  .mobile-controls-panel .cue-elevation {
+    gap: 4px;
+    padding-top: 5px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    color: #d6d0bd;
+    font-size: 0.66rem;
+    text-align: center;
+  }
+
+  .mobile-controls-panel #cueElevation {
+    height: 30px;
+  }
+
+  .mobile-controls-panel .spin-dock {
+    min-height: 68px;
+    padding: 8px 11px;
+  }
+
+  .mobile-controls-panel .spin-dock > span::after {
+    display: block;
+    margin-top: 2px;
+    color: #7e9181;
+    content: "toque e arraste";
+    font-size: 0.52rem;
+    font-weight: 500;
+    letter-spacing: 0;
+    text-transform: none;
+  }
+
+  .mobile-controls-panel .cam-dock {
+    gap: 6px;
+    padding: 9px;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .mobile-controls-panel.open { animation: none; }
 }
