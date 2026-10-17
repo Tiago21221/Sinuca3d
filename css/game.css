@@ -576,6 +576,56 @@
   #hud > .mobile-controls-panel .cam-dock { right: 8px; bottom: 8px; }
 }
 
+/* O efeito fica acima do conjunto de força e ângulo, sem cobrir a mesa. */
+@media (min-width: 901px) {
+  .spin-dock {
+    top: auto;
+    right: auto;
+    bottom: calc(50% + 184px);
+    left: max(18px, env(safe-area-inset-left));
+  }
+}
+
+@media (max-width: 900px) {
+  #hud > .mobile-controls-panel .spin-dock {
+    top: auto;
+    right: auto;
+    bottom: calc(12px + 270px);
+    left: max(12px, env(safe-area-inset-left));
+    display: grid !important;
+    width: 112px;
+    min-height: 0;
+    justify-items: center;
+    padding: 7px;
+  }
+
+  #hud > .mobile-controls-panel .spin-ball {
+    width: 64px;
+    height: 64px;
+  }
+}
+
+@media (max-width: 600px) and (orientation: portrait) {
+  #hud > .mobile-controls-panel .spin-dock {
+    bottom: calc(10px + 246px);
+    left: max(8px, env(safe-area-inset-left));
+    width: 98px;
+  }
+
+  #hud > .mobile-controls-panel .spin-ball {
+    width: 54px;
+    height: 54px;
+  }
+}
+
+@media (max-width: 600px) and (orientation: landscape) {
+  #hud > .mobile-controls-panel .spin-dock {
+    bottom: calc(8px + 205px);
+    left: max(8px, env(safe-area-inset-left));
+    width: 112px;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .player-card, .aim-dock, #toast { transition: none; }
 }
