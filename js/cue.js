@@ -59,7 +59,8 @@ export class CueStick {
     const horizontal = new THREE.Vector3(this.aim.x, 0, this.aim.z).normalize();
     const side = new THREE.Vector3(-horizontal.z, 0, horizontal.x);
     const axis = horizontal.clone().multiplyScalar(Math.cos(angle));
-    axis.y = Math.sin(angle);
+    // A elevação positiva deve levantar visualmente o taco, afastando o cabo do pano.
+    axis.y = -Math.sin(angle);
     axis.normalize();
 
     // English changes the visible contact point, while elevation rotates the
