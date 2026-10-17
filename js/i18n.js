@@ -111,7 +111,7 @@ const dictionaries = {
     creditsBody:
       "Sinuquinha — jogo de sinuca 3D para navegador. Gráficos: Three.js. Física: cannon-es. Sons gerados no aparelho (Web Audio API), sem trechos protegidos por direitos autorais. Desenvolvido para rodar direto no Chrome, Edge e Firefox.",
     tutorialBody:
-      "No computador, segure o botão esquerdo: arraste na horizontal para girar a mira, puxe para trás para escolher a força e empurre para frente para tacar. Soltar depois de puxar também executa a tacada. Use a barra de força e o botão Tacada como alternativa. A/D: mira; W/S: força; Espaço: tacada; setas: câmera; Q/E: zoom; C: ângulo; R: câmera inicial; Esc: pausa. Na bola na mão, clique no pano para posicionar ou use as setas e Enter. No celular, arraste na mesa para mirar, ajuste a força pelo controle deslizante e toque em Tacada para jogar. Use os botões laterais para câmera e tela cheia.",
+      "No computador, W/S move a câmera para cima e para baixo e A/D move a câmera para os lados. Segure Ctrl e mova o mouse para aplicar efeito na bola. Segure Shift + W/S para ajustar o ângulo de elevação do taco. Arraste com o botão esquerdo para mirar e puxe para trás para escolher a força; empurre para frente ou solte depois de puxar para tacar. Use a barra de força e o botão Tacada como alternativa; Backspace ou Esc cancela a força preparada. Espaço: tacada; Q/E: zoom; C: ângulo; R: câmera inicial; Esc: pausa. Na bola na mão, clique no pano para posicionar ou use as setas e Enter. No celular, arraste na mesa para mirar, ajuste a força pelo controle deslizante e toque em Tacada para jogar. Use os botões laterais para câmera e tela cheia.",
     potted: "Encaçapou",
     firstContact: "Primeiro contato",
     scratch: "Bola branca encaçapada",
