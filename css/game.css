@@ -1066,6 +1066,125 @@
   }
 }
 
+/* Mobile: keep the shot controls inside the safe area at every screen ratio. */
+@media (max-width: 900px) {
+  #hud {
+    overflow: hidden;
+  }
+
+  #hud .topbar {
+    width: calc(100% - 16px);
+    max-width: none;
+    gap: 6px;
+  }
+
+  #hud .player-card {
+    min-width: 0;
+    flex: 1 1 0;
+    padding: 8px;
+  }
+
+  #hud .mode-chip {
+    flex: 0 1 150px;
+    min-width: 92px;
+  }
+
+  .mobile-controls-panel {
+    right: max(8px, env(safe-area-inset-right));
+    left: auto;
+    width: min(184px, calc(100vw - 16px));
+    max-height: calc(100dvh - 82px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+  }
+
+  .mobile-controls-panel .control-console,
+  .mobile-controls-panel .aim-dock,
+  .mobile-controls-panel .spin-dock,
+  .mobile-controls-panel .cam-dock {
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 900px) and (orientation: landscape) {
+  #hud .topbar {
+    position: absolute;
+    top: max(6px, env(safe-area-inset-top));
+    left: 50%;
+    width: calc(100% - 170px);
+    transform: translateX(-50%);
+  }
+
+  #hud .player-card {
+    padding: 5px 8px;
+  }
+
+  #hud .player-card .ball-rack {
+    transform: scale(.82);
+    transform-origin: left center;
+  }
+
+  .mobile-controls-panel {
+    right: auto;
+    bottom: max(8px, env(safe-area-inset-bottom));
+    left: max(8px, env(safe-area-inset-left));
+    width: 154px;
+    max-height: calc(100dvh - 16px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+    padding: 8px;
+  }
+
+  .mobile-controls-panel .mobile-controls-heading {
+    min-height: 28px;
+  }
+
+  .mobile-controls-panel .aim-dock {
+    gap: 7px;
+    padding: 8px;
+  }
+
+  .mobile-controls-panel #powerSlider {
+    height: 92px;
+  }
+
+  .mobile-controls-panel .spin-dock {
+    min-height: 56px;
+    padding: 5px 8px;
+  }
+
+  .mobile-controls-panel .spin-ball {
+    flex-basis: 40px;
+    width: 40px;
+    height: 40px;
+  }
+
+  .mobile-controls-panel #cueElevation {
+    height: 24px;
+  }
+
+  .mobile-controls-panel .shoot {
+    min-height: 40px;
+  }
+
+  .mobile-controls-actions {
+    right: max(8px, env(safe-area-inset-right));
+    bottom: max(8px, env(safe-area-inset-bottom));
+  }
+}
+
+@media (max-width: 600px) and (orientation: portrait) {
+  .mobile-controls-panel {
+    right: 8px;
+    bottom: calc(58px + env(safe-area-inset-bottom));
+    width: min(174px, calc(100vw - 16px));
+  }
+
+  #hud .topbar {
+    gap: 4px;
+  }
+
+  #hud .mode-chip {
+    min-width: 72px;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .mobile-controls-panel.open { animation: none; }
 }
