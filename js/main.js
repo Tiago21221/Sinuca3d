@@ -176,6 +176,10 @@ if (!renderer) {
   controls.onZoom = (d) => cameraRig.zoom(d);
   controls.onAngle = () => cameraRig.cycleAngle();
   controls.onResetCamera = () => cameraRig.reset();
+  ui.onFineAim = (direction) => {
+    controls.aimAngle -= direction * 0.012;
+    ui.aimDir = { x: Math.sin(controls.aimAngle), z: Math.cos(controls.aimAngle) };
+  };
   controls.onPlace = () => game.confirmPlace();
   controls.onPlaceNudge = (dx, dz) => {
     const cue = game.physics.bodies.get(0);

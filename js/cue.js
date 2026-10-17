@@ -48,18 +48,29 @@ export class CueStick {
     this.aim.normalize();
   }
 
-  update(cuePos, aiming, power, pullAnim = 0) {
+  update(cuePos, aiming, power, pullAnim = 0, elevation = 0, spin = { x: 0, y: 0 }) {
     this.power = power;
     this.group.visible = aiming;
     if (!aiming) return;
-    const back = Math.max(0.005, BALL_RADIUS - 0.02 + pullAnim);
-    const y = TABLE_HEIGHT + BALL_RADIUS * 0.85;
-    this.group.position.set(
-      cuePos.x - this.aim.x * back,
-      y,
-      cuePos.z - this.aim.z * back
-    );
-    this.group.rotation.set(0, Math.atan2(this.aim.x, this.aim.z) - Math.PI / 2, 0.04);
+
+    const back = Math.max(0.005, BALL_RADIUS + Math.max(0, pullAnim - 0.008));
+    const lift = Math.max(0, Math.min(1, elevation));
+    const angle = lift * (Math.PI * 0.36);
+    const horizontal = new THREE.Vector3(this.aim.x, 0, this.aim.z).normalize();
+    const side = new THREE.Vector3(-horizontal.z, 0, horizontal.x);
+    const axis = horizontal.clone().multiplyScalar(Math.cos(angle));
+    // A elevação positiva deve levantar visualmente o taco, afastando o cabo do pano.
+    axis.y = -Math.sin(angle);
+    axis.normalize();
+
+    // English changes the visible contact point, while elevation rotates the
+    // complete cue around the tip instead of letting it pass through the cloth.
+    const contact = new THREE.Vector3(cuePos.x, TABLE_HEIGHT + BALL_RADIUS, cuePos.z)
+      .addScaledVector(side, clamp(spin.x, -1, 1) * BALL_RADIUS * 0.32)
+      .addScaledVector(new THREE.Vector3(0, 1, 0), clamp(spin.y, -1, 1) * BALL_RADIUS * 0.32);
+    const tipOffset = axis.clone().multiplyScalar(0.012);
+    this.group.position.copy(contact).add(tipOffset).addScaledVector(axis, -back);
+    this.group.quaternion.setFromUnitVectors(new THREE.Vector3(1, 0, 0), axis);
   }
 
 }
@@ -211,6 +222,10 @@ export function predictAimPaths(origin, direction, balls, bounds) {
     contact: impact,
     targetSpot,
   };
+}
+
+function clamp(value, min, max) {
+  return Math.max(min, Math.min(max, value));
 }
 
 function setLinePoints(line, points) {
