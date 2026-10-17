@@ -107,10 +107,11 @@ export class Controls {
       this._orbitStart = { x: e.clientX, y: e.clientY };
       return;
     }
-    if (e.button === 2 || e.shiftKey) {
+    if (e.button === 2) {
       this._orbitStart = { x: e.clientX, y: e.clientY };
       return;
     }
+    this.shiftElevation = e.shiftKey;
     this.draggingAim = true;
     this.aimOnly = e.pointerType === "touch";
     this.charging = !this.aimOnly;
@@ -144,7 +145,12 @@ export class Controls {
       this.onSpinChange?.({ ...this.spin });
       return;
     }
-    this.aimAngle -= dx * (e.shiftKey ? 0.003 : 0.006) * sens;
+    if (this.shiftElevation || e.shiftKey) {
+      this.cueElevation = clamp(this.cueElevation - dy * 0.008, 0, 1);
+      this.onElevationChange?.(this.cueElevation);
+      return;
+    }
+    this.aimAngle -= dx * 0.006 * sens;
     if (this.aimOnly) return;
     const pull = Math.max(0, e.clientY - this._chargeStartY);
     if (pull > this.pullDistance) {
@@ -169,6 +175,7 @@ export class Controls {
     this.charging = false;
     this.draggingAim = false;
     this.aimOnly = false;
+    this.shiftElevation = false;
     this.pullDistance = 0;
     this.cuePull = 0;
     this.power = 0.08;
@@ -179,6 +186,7 @@ export class Controls {
   _up(e) {
     this.pointers.delete(e.pointerId);
     this._orbitStart = null;
+    this.shiftElevation = false;
     if (this.placeMode || this.placementPointer === e.pointerId) {
       if (this.placementPointer === e.pointerId) this.placementPointer = null;
       return;
