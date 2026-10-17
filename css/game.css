@@ -470,12 +470,15 @@
   #toast { top: max(70px, calc(env(safe-area-inset-top) + 54px)); }
 }
 
-/* No mobile, a mesa inteira recebe os gestos: não sobreponha mira ou controles. */
+/* No mobile, a mesa recebe os gestos; o painel mostra apenas força, ângulo e efeito. */
 @media (max-width: 900px) {
   .cam-dock,
-  .mobile-controls-panel,
   .mobile-controls-actions {
     display: none !important;
+  }
+
+  .mobile-controls-panel {
+    display: grid;
   }
 }
 
