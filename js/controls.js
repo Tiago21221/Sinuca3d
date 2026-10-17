@@ -36,7 +36,12 @@ export class Controls {
       "wheel",
       (e) => {
         e.preventDefault();
-        this.onZoom?.(e.deltaY * 0.002);
+        if (e.ctrlKey && this.enabled) {
+        this.cueElevation = clamp(this.cueElevation - e.deltaY * 0.0025, 0, 1);
+        this.onElevationChange?.(this.cueElevation);
+        return;
+      }
+      this.onZoom?.(e.deltaY * 0.002);
       },
       { passive: false }
     );
@@ -135,7 +140,9 @@ export class Controls {
       this.draggingAim = false;
       this.onShoot?.(this.cuePull);
       this.cuePull = 0;
+      this.cueElevation = 0;
       this.onPullChange?.(0);
+      this.onElevationChange?.(0);
     }
   }
 
@@ -152,7 +159,9 @@ export class Controls {
       this.aimOnly = false;
       this.onShoot?.(this.cuePull);
       this.cuePull = 0;
+      this.cueElevation = 0;
       this.onPullChange?.(0);
+      this.onElevationChange?.(0);
       return;
     }
     this.charging = false;
