@@ -205,11 +205,10 @@ export class Controls {
   tickCamera(dt, rig) {
     if (this.placeMode) return;
     const s = (this.settings.cameraSpeed || 1) * dt * 1.4;
-    const ctrl = this.keys.has("ControlLeft") || this.keys.has("ControlRight");
     if (this.keys.has("KeyA")) rig.orbit(80 * s, 0);
     if (this.keys.has("KeyD")) rig.orbit(-80 * s, 0);
-    if (!ctrl && this.keys.has("KeyW")) rig.orbit(0, -60 * s);
-    if (!ctrl && this.keys.has("KeyS")) rig.orbit(0, 60 * s);
+    if (this.keys.has("KeyW")) rig.orbit(0, -60 * s);
+    if (this.keys.has("KeyS")) rig.orbit(0, 60 * s);
     if (this.keys.has("ArrowLeft")) rig.orbit(80 * s, 0);
     if (this.keys.has("ArrowRight")) rig.orbit(-80 * s, 0);
     if (this.keys.has("ArrowUp")) rig.orbit(0, -60 * s);
@@ -234,11 +233,11 @@ export class Controls {
     const oldAngle = this.aimAngle;
     const oldPower = this.power;
     const aimSpeed = 1.3 * dt * (this.settings.aimSensitivity || 1);
-    const ctrl = this.keys.has("ControlLeft") || this.keys.has("ControlRight");
+    const shift = this.keys.has("ShiftLeft") || this.keys.has("ShiftRight");
     const elevationSpeed = 0.7 * dt;
     const oldElevation = this.cueElevation;
-    if (ctrl && this.keys.has("KeyW")) this.cueElevation = clamp(this.cueElevation + elevationSpeed, 0, 1);
-    if (ctrl && this.keys.has("KeyS")) this.cueElevation = clamp(this.cueElevation - elevationSpeed, 0, 1);
+    if (shift && this.keys.has("KeyW")) this.cueElevation = clamp(this.cueElevation + elevationSpeed, 0, 1);
+    if (shift && this.keys.has("KeyS")) this.cueElevation = clamp(this.cueElevation - elevationSpeed, 0, 1);
     if (this.power !== oldPower) this.onPowerChange?.(this.power);
     if (this.cueElevation !== oldElevation) this.onElevationChange?.(this.cueElevation);
     return this.aimAngle !== oldAngle || this.power !== oldPower || this.cueElevation !== oldElevation;
