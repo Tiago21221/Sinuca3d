@@ -426,6 +426,102 @@
   #toast { top: max(70px, calc(env(safe-area-inset-top) + 54px)); }
 }
 
+/* Controles estilo mesa mobile: áreas independentes, toque confortável e leitura imediata. */
+.fine-aim {
+  display: flex;
+  grid-column: 1 / -1;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  color: rgba(235, 221, 184, 0.58);
+  font-size: 0.5rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+}
+.fine-aim button {
+  width: 34px;
+  min-width: 34px;
+  height: 30px;
+  min-height: 30px;
+  padding: 0;
+  border-radius: 8px;
+  color: #f0d792;
+  font-size: 1.15rem;
+}
+
+@media (max-width: 900px) {
+  #hud > .mobile-controls-panel {
+    position: static;
+    display: contents;
+  }
+  #hud > .mobile-controls-panel .mobile-controls-heading,
+  #hud > .mobile-controls-panel .keyboard-hint,
+  .mobile-controls-actions { display: none; }
+  #hud > .mobile-controls-panel .control-console {
+    position: absolute;
+    right: auto;
+    bottom: max(12px, env(safe-area-inset-bottom));
+    left: max(12px, env(safe-area-inset-left));
+    display: block;
+    width: 112px;
+    min-width: 0;
+    transform: none;
+  }
+  #hud > .mobile-controls-panel .aim-dock {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 9px;
+    padding: 10px 8px;
+    border-radius: 17px;
+    background: linear-gradient(180deg, rgba(16, 27, 20, .96), rgba(7, 13, 10, .96));
+    box-shadow: 0 12px 30px rgba(0,0,0,.42), inset 0 1px rgba(255,255,255,.06);
+  }
+  #hud > .mobile-controls-panel .power-control { justify-items: center; gap: 4px; }
+  #hud > .mobile-controls-panel .power-heading { justify-content: center; gap: 7px; width: 100%; }
+  #hud > .mobile-controls-panel #powerSlider {
+    width: 52px;
+    height: 142px;
+    writing-mode: vertical-lr;
+    direction: rtl;
+    touch-action: pan-y;
+  }
+  #hud > .mobile-controls-panel .cue-elevation { display: grid; gap: 4px; font-size: .62rem; text-align: center; }
+  #hud > .mobile-controls-panel #cueElevation { width: 100%; height: 24px; }
+  #hud > .mobile-controls-panel .shoot { width: 100%; min-height: 44px; padding-inline: 5px; font-size: .7rem; }
+  #hud > .mobile-controls-panel .spin-dock {
+    position: absolute;
+    top: max(12px, env(safe-area-inset-top));
+    right: max(12px, env(safe-area-inset-right));
+    bottom: auto;
+    left: auto;
+    display: grid;
+    width: 82px;
+    padding: 7px;
+    border-radius: 16px;
+  }
+  #hud > .mobile-controls-panel .spin-ball { width: 64px; height: 64px; }
+  #hud > .mobile-controls-panel .spin-dot { width: 13px; height: 13px; }
+  #hud > .mobile-controls-panel .cam-dock {
+    top: auto;
+    right: max(12px, env(safe-area-inset-right));
+    bottom: max(12px, env(safe-area-inset-bottom));
+    display: grid;
+    grid-template-columns: repeat(2, 40px);
+    transform: none;
+    padding: 7px;
+  }
+  #hud > .mobile-controls-panel .cam-dock button { min-width: 40px; min-height: 40px; }
+  #hud > .mobile-controls-panel .fine-aim { order: -1; }
+}
+
+@media (max-width: 600px) and (orientation: portrait) {
+  #hud > .mobile-controls-panel .control-console { width: 98px; }
+  #hud > .mobile-controls-panel #powerSlider { height: 124px; }
+  #hud > .mobile-controls-panel .spin-dock { width: 70px; }
+  #hud > .mobile-controls-panel .spin-ball { width: 54px; height: 54px; }
+  #hud > .mobile-controls-panel .cam-dock { right: 8px; bottom: 8px; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .player-card, .aim-dock, #toast { transition: none; }
 }

@@ -16,6 +16,7 @@ export class UI {
     this.onPauseAction = onPauseAction;
     this.onOnlineAction = onOnlineAction;
     this.onOnlineCancel = onOnlineCancel;
+    this.onFineAim = null;
     this.lang = settings.language;
     this.aimDir = { x: 1, z: 0 };
     this.spin = { x: 0, y: 0 };
@@ -75,6 +76,11 @@ export class UI {
       if (historyToggle) {
         this.audio.click();
         this._toggleHistory();
+      }
+      const fineAim = e.target.closest("[data-aim-fine]");
+      if (fineAim) {
+        this.onFineAim?.(fineAim.dataset.aimFine === "left" ? -1 : 1);
+        return;
       }
       const cam = e.target.closest("[data-cam]");
       if (cam && this.game) {
