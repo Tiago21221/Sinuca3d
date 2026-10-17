@@ -7,6 +7,9 @@ export class GameAudio {
     this.sfxGain = null;
     this.musicGain = null;
     this.musicNodes = [];
+    this.ballClack = new Audio("https://hebbkx1anhila5yf.public.blob.vercel-storage.com/539854__za-games__billiard-ball-clack-a2LjdRmWahAesRZWEG9ysuqN4UvSLc.wav");
+    this.ballClack.preload = "auto";
+    this.ballClack.volume = 0.72;
     this.enabled = false;
     this.volumes = { sfx: 0.75, music: 0.28 };
   }
@@ -84,9 +87,11 @@ export class GameAudio {
   }
 
   ballHit(impulse) {
+    if (!this.enabled) return;
     const k = Math.min(1, impulse / 6);
-    this._noise(0.035, 0.025 + k * 0.09, 1700 + k * 900);
-    this._beep({ freq: 720 + k * 420, dur: 0.045 + k * 0.045, type: "triangle", gain: 0.035 + k * 0.13, slide: -120 });
+    const clack = this.ballClack.cloneNode();
+    clack.volume = Math.min(1, 0.28 + k * 0.72) * this.volumes.sfx;
+    clack.play().catch(() => {});
   }
 
   cushion(impulse) {
