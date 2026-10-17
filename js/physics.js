@@ -40,8 +40,8 @@ export class PhysicsWorld {
 
     this.world.addContactMaterial(
       new CANNON.ContactMaterial(BALL_MATERIAL, BALL_MATERIAL, {
-        friction: 0.04,
-        restitution: 0.94,
+        friction: 0.035,
+        restitution: 0.98,
         contactEquationStiffness: 1e7,
         contactEquationRelaxation: 3,
       })
@@ -237,14 +237,15 @@ export class PhysicsWorld {
     this.events = [];
   }
 
-  strikeCue(direction, speed, spin = { x: 0, y: 0 }) {
+  strikeCue(direction, speed, spin = { x: 0, y: 0 }, elevation = 0) {
     const cue = this.bodies.get(0);
     if (!cue) return;
     cue.wakeUp();
     const dir = direction.clone();
     dir.y = 0;
     dir.normalize();
-    cue.velocity.set(dir.x * speed, 0, dir.z * speed);
+    const jump = clampValue(elevation, 0, 1) * speed * 0.34;
+    cue.velocity.set(dir.x * speed, jump, dir.z * speed);
     const rollingSpin = speed / BALL_RADIUS * (1 + clampValue(spin.y, -1, 1) * 1.5);
     cue.angularVelocity.set(
       -dir.z * rollingSpin,

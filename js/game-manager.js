@@ -228,6 +228,7 @@ export class GameManager {
       power: this.ui.power,
       pulled: pulled || this.cuePull,
       spin: { ...this.ui.spin },
+      elevation: this.ui.cueElevation,
     };
     if (this.config.multiplayer && !this.config.multiplayerHost) {
       this.waitingForNetwork = true;
@@ -235,7 +236,7 @@ export class GameManager {
       this.onNetworkEvent?.("shot-request", shot);
       return;
     }
-    this._fire(dir, shot.power, shot.pulled, shot.spin);
+    this._fire(dir, shot.power, shot.pulled, shot.spin, shot.elevation);
     if (this.config.multiplayer) this.onNetworkEvent?.("shot", { shooter: this.localPlayer, shot });
   }
 
@@ -265,6 +266,7 @@ export class GameManager {
       !Number.isFinite(shot.spin?.y) ||
       Math.abs(shot.spin.x) > 1 ||
       Math.abs(shot.spin.y) > 1 ||
+      (shot.elevation != null && (!Number.isFinite(shot.elevation) || shot.elevation < 0 || shot.elevation > 1)) ||
       (shot.pulled != null &&
         (!Number.isFinite(shot.pulled) || shot.pulled < 0 || shot.pulled > CUE_MAX_PULL))
     ) {
@@ -275,13 +277,14 @@ export class GameManager {
       new THREE.Vector3(shot.direction.x, 0, shot.direction.z),
       shot.power,
       Number.isFinite(shot.pulled) ? shot.pulled : 0,
-      { x: shot.spin.x, y: shot.spin.y }
+      { x: shot.spin.x, y: shot.spin.y },
+      Number.isFinite(shot.elevation) ? shot.elevation : 0
     );
     if (this.config.multiplayerHost) this.onNetworkEvent?.("shot", { shooter, shot });
     return true;
   }
 
-  _fire(dir, power, pulled = 0, spin = { x: 0, y: 0 }) {
+  _fire(dir, power, pulled = 0, spin = { x: 0, y: 0 }, elevation = 0) {
     this.phase = "stroke";
     this.settle = 0;
     this.shotPocketed = [];
@@ -290,8 +293,9 @@ export class GameManager {
       dir: dir.clone().normalize(),
       cuePosition: this.physics.bodies.get(0).position.clone(),
       power,
-      spin: { ...spin },
-      elapsed: 0,
+    spin: { ...spin },
+    elevation,
+    elapsed: 0,
       duration: 0.34,
       pull: Math.max(pulled, power * CUE_MAX_PULL),
       impactDone: false,
@@ -323,8 +327,9 @@ export class GameManager {
       this.physics.strikeCue(
         this.stroke.dir,
         this.stroke.power * MAX_SHOT_SPEED,
-        this.stroke.spin
-      );
+  this.stroke.spin,
+      this.stroke.elevation
+    );
       const cue = this.physics.bodies.get(0);
       if (cue) this.cameraRig.setFollow(cue.position, false);
       this.ui.showMessage(this.ui.tx("validShot"), 600);

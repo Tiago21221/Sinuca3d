@@ -20,6 +20,7 @@ export class UI {
     this.aimDir = { x: 1, z: 0 };
     this.spin = { x: 0, y: 0 };
     this.power = 0.42;
+    this.cueElevation = 0;
     this.game = null;
     this.setup = {
       mode: MODES.EIGHT_BALL,
@@ -103,6 +104,10 @@ export class UI {
     this.root.querySelector("#powerSlider")?.addEventListener("input", (e) => {
       this.power = Number(e.target.value);
       this._powerLabel();
+    });
+    this.root.querySelector("#cueElevation")?.addEventListener("input", (e) => {
+      this.cueElevation = Number(e.target.value);
+      this._elevationLabel();
     });
 
     const spinBall = this.root.querySelector("#spinBall");
@@ -497,6 +502,11 @@ export class UI {
   _powerLabel() {
     const el = this.root.querySelector("#powerValue");
     if (el) el.textContent = Math.round(this.power * 100) + "%";
+  }
+
+  _elevationLabel() {
+    const el = this.root.querySelector("#cueElevationValue");
+    if (el) el.textContent = `${Math.round(this.cueElevation * 18)}°`;
   }
 
   renderStats() {

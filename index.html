@@ -60,7 +60,9 @@
                 </div>
                 <input id="powerSlider" type="range" min="0.08" max="1" step="0.01" value="0.42" aria-label="Força da tacada" />
               </div>
-              <button class="shoot" data-shoot aria-label="Executar tacada"><span class="shoot-icon" aria-hidden="true">↗</span><span data-i18n="shoot">Tacada</span></button>
+              <label class="cue-elevation" for="cueElevation">Ângulo do taco <output id="cueElevationValue">0°</output></label>
+  <input id="cueElevation" type="range" min="0" max="1" step="0.01" value="0" aria-label="Ângulo do taco para salto" />
+  <button class="shoot" data-shoot aria-label="Executar tacada"><span class="shoot-icon" aria-hidden="true">↗</span><span data-i18n="shoot">Tacada</span></button>
               <small class="keyboard-hint" data-i18n="keyboardHelp"></small>
             </div>
           </div>
