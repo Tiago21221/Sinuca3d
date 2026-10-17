@@ -49,7 +49,17 @@ export class Controls {
     );
     window.addEventListener("keydown", (e) => {
       this.keys.add(e.code);
-      if (e.code === "Escape" && !e.repeat) this.onPause?.();
+      if (e.code === "Escape" && !e.repeat) {
+        if (this.charging || this.pullDistance > 0) {
+          this.cancelShot();
+        } else {
+          this.onPause?.();
+        }
+      }
+      if (e.code === "Backspace" && !e.repeat && (this.charging || this.pullDistance > 0)) {
+        e.preventDefault();
+        this.cancelShot();
+      }
       if (e.code === "Enter" && this.placeMode && !e.repeat) {
         e.preventDefault();
         this.onPlace?.();
@@ -67,7 +77,7 @@ export class Controls {
         e.preventDefault();
         if (!e.repeat) this.onShoot?.();
       }
-      if (["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown", "Space"].includes(e.code)) e.preventDefault();
+      if (["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown", "Space", "Backspace"].includes(e.code)) e.preventDefault();
     });
     window.addEventListener("keyup", (e) => this.keys.delete(e.code));
 
@@ -155,6 +165,17 @@ export class Controls {
     }
   }
 
+  cancelShot() {
+    this.charging = false;
+    this.draggingAim = false;
+    this.aimOnly = false;
+    this.pullDistance = 0;
+    this.cuePull = 0;
+    this.power = 0.08;
+    this.onPullChange?.(0);
+    this.onPowerChange?.(this.power);
+  }
+
   _up(e) {
     this.pointers.delete(e.pointerId);
     this._orbitStart = null;
@@ -184,6 +205,11 @@ export class Controls {
   tickCamera(dt, rig) {
     if (this.placeMode) return;
     const s = (this.settings.cameraSpeed || 1) * dt * 1.4;
+    const ctrl = this.keys.has("ControlLeft") || this.keys.has("ControlRight");
+    if (this.keys.has("KeyA")) rig.orbit(80 * s, 0);
+    if (this.keys.has("KeyD")) rig.orbit(-80 * s, 0);
+    if (!ctrl && this.keys.has("KeyW")) rig.orbit(0, -60 * s);
+    if (!ctrl && this.keys.has("KeyS")) rig.orbit(0, 60 * s);
     if (this.keys.has("ArrowLeft")) rig.orbit(80 * s, 0);
     if (this.keys.has("ArrowRight")) rig.orbit(-80 * s, 0);
     if (this.keys.has("ArrowUp")) rig.orbit(0, -60 * s);
@@ -208,12 +234,11 @@ export class Controls {
     const oldAngle = this.aimAngle;
     const oldPower = this.power;
     const aimSpeed = 1.3 * dt * (this.settings.aimSensitivity || 1);
-    if (this.keys.has("KeyA")) this.aimAngle += aimSpeed;
-    if (this.keys.has("KeyD")) this.aimAngle -= aimSpeed;
+    const ctrl = this.keys.has("ControlLeft") || this.keys.has("ControlRight");
     const elevationSpeed = 0.7 * dt;
     const oldElevation = this.cueElevation;
-    if (this.keys.has("ArrowUp") || this.keys.has("KeyW")) this.cueElevation = clamp(this.cueElevation + elevationSpeed, 0, 1);
-    if (this.keys.has("ArrowDown") || this.keys.has("KeyS")) this.cueElevation = clamp(this.cueElevation - elevationSpeed, 0, 1);
+    if (ctrl && this.keys.has("KeyW")) this.cueElevation = clamp(this.cueElevation + elevationSpeed, 0, 1);
+    if (ctrl && this.keys.has("KeyS")) this.cueElevation = clamp(this.cueElevation - elevationSpeed, 0, 1);
     if (this.power !== oldPower) this.onPowerChange?.(this.power);
     if (this.cueElevation !== oldElevation) this.onElevationChange?.(this.cueElevation);
     return this.aimAngle !== oldAngle || this.power !== oldPower || this.cueElevation !== oldElevation;
