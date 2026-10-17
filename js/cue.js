@@ -48,7 +48,7 @@ export class CueStick {
     this.aim.normalize();
   }
 
-  update(cuePos, aiming, power, pullAnim = 0) {
+  update(cuePos, aiming, power, pullAnim = 0, elevation = 0) {
     this.power = power;
     this.group.visible = aiming;
     if (!aiming) return;
@@ -59,7 +59,9 @@ export class CueStick {
       y,
       cuePos.z - this.aim.z * back
     );
-    this.group.rotation.set(0, Math.atan2(this.aim.x, this.aim.z) - Math.PI / 2, 0.04);
+    const horizontalAngle = Math.atan2(this.aim.x, this.aim.z) - Math.PI / 2;
+    const liftAngle = Math.max(0, Math.min(1, elevation)) * (Math.PI * 0.42);
+    this.group.rotation.set(0, horizontalAngle, 0.04 + liftAngle);
   }
 
 }

@@ -176,7 +176,13 @@ export class GameManager {
       this.cue.setAim(dir);
       const pull = aiming ? this.cuePull : this._strokeCueOffset();
       const cuePosition = this.phase === "stroke" ? this.stroke.cuePosition : cueMesh.position;
-      this.cue.update(cuePosition, aiming || this.phase === "stroke", this.ui.power, pull);
+      this.cue.update(
+    cuePosition,
+    aiming || this.phase === "stroke",
+    this.ui.power,
+    pull,
+    this.ui.cueElevation
+  );
       const aimEnabled = this.config?.aimAssist ?? this.settings.aimAssist;
       updateAimLine(
         this.aimHelpers,
