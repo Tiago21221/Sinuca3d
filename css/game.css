@@ -984,6 +984,7 @@
   }
 
   .mobile-controls-panel .cam-dock {
+    display: none !important;
     top: 50%;
     right: max(18px, env(safe-area-inset-right));
     bottom: auto;
