@@ -1251,6 +1251,98 @@
   }
 }
 
+/* Mobile shot dock: keep the complete control stack visible and inside the viewport. */
+@media (max-width: 900px) {
+  #hud > .mobile-controls-panel {
+    position: fixed !important;
+    display: block !important;
+    left: max(8px, env(safe-area-inset-left)) !important;
+    right: auto !important;
+    bottom: max(8px, env(safe-area-inset-bottom)) !important;
+    width: 142px !important;
+    height: auto !important;
+    max-height: calc(100dvh - 16px - env(safe-area-inset-top) - env(safe-area-inset-bottom)) !important;
+    overflow: visible !important;
+    padding: 0 !important;
+    z-index: 30 !important;
+    background: transparent !important;
+    border: 0 !important;
+  }
+
+  #hud > .mobile-controls-panel .mobile-controls-heading,
+  #hud > .mobile-controls-panel .keyboard-hint,
+  #hud > .mobile-controls-panel .cam-dock,
+  #hud > .mobile-controls-panel + .mobile-controls-actions {
+    display: none !important;
+  }
+
+  #hud > .mobile-controls-panel .control-console {
+    position: static !important;
+    display: block !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    transform: none !important;
+  }
+
+  #hud > .mobile-controls-panel .aim-dock {
+    position: relative !important;
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 8px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+    padding: 8px !important;
+    border: 1px solid rgba(224, 194, 112, .28) !important;
+    border-radius: 16px !important;
+    background: linear-gradient(180deg, rgba(11, 22, 16, .98), rgba(5, 12, 8, .98)) !important;
+    box-shadow: 0 8px 26px rgba(0, 0, 0, .5) !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+  }
+
+  #hud > .mobile-controls-panel .spin-dock {
+    position: static !important;
+    display: flex !important;
+    order: -1 !important;
+    width: 100% !important;
+    min-height: 58px !important;
+    box-sizing: border-box !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    padding: 4px 6px !important;
+  }
+
+  #hud > .mobile-controls-panel .spin-ball {
+    width: 48px !important;
+    height: 48px !important;
+    flex: 0 0 48px !important;
+  }
+
+  #hud > .mobile-controls-panel .power-control,
+  #hud > .mobile-controls-panel .cue-elevation,
+  #hud > .mobile-controls-panel .shoot {
+    display: grid !important;
+    visibility: visible !important;
+  }
+
+  #hud > .mobile-controls-panel #powerSlider {
+    width: 48px !important;
+    height: 120px !important;
+    margin: 0 auto !important;
+  }
+
+  #hud > .mobile-controls-panel .shoot {
+    width: 100% !important;
+    min-height: 42px !important;
+  }
+}
+
+@media (max-width: 360px) and (orientation: portrait) {
+  #hud > .mobile-controls-panel { width: 128px !important; }
+  #hud > .mobile-controls-panel #powerSlider { height: 100px !important; }
+  #hud > .mobile-controls-panel .spin-ball { width: 42px !important; height: 42px !important; flex-basis: 42px !important; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .mobile-controls-panel.open { animation: none; }
 }
