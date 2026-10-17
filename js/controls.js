@@ -24,7 +24,9 @@ export class Controls {
     this.placementPointer = null;
     this.pullDistance = 0;
     this.cuePull = 0;
+    this.cueElevation = 0;
     this.onPullChange = null;
+    this.onElevationChange = null;
 
     canvas.addEventListener("pointerdown", (e) => this._down(e));
     canvas.addEventListener("pointermove", (e) => this._move(e));
@@ -46,6 +48,10 @@ export class Controls {
         this.onPlace?.();
       }
       if (e.code === "KeyC" && !e.repeat) this.onAngle?.();
+      if ((e.code === "KeyZ" || e.code === "KeyX") && !e.repeat) {
+        this.cueElevation = clamp(this.cueElevation + (e.code === "KeyX" ? 0.1 : -0.1), 0, 1);
+        this.onElevationChange?.(this.cueElevation);
+      }
       if (e.code === "KeyR" && !e.repeat) this.onResetCamera?.();
       if ((e.code === "KeyQ" || e.code === "KeyE") && !e.repeat) {
         this.onZoom?.(e.code === "KeyQ" ? -0.25 : 0.25);

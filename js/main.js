@@ -162,6 +162,9 @@ if (!renderer) {
   controls.onPullChange = (pull) => {
     game.cuePull = pull;
   };
+  controls.onElevationChange = (elevation) => {
+    ui.cueElevation = elevation;
+  };
   controls.onPause = () => handlePause("pause");
   controls.onOrbit = (dx, dy) => cameraRig.orbit(dx, dy);
   controls.onZoom = (d) => cameraRig.zoom(d);

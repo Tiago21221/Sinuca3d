@@ -84,19 +84,15 @@ export class GameAudio {
   }
 
   ballHit(impulse) {
-    const k = Math.min(1, impulse / 4);
-    this._beep({
-      freq: 520 + k * 280,
-      dur: 0.07 + k * 0.05,
-      type: "sine",
-      gain: 0.04 + k * 0.14,
-    });
+    const k = Math.min(1, impulse / 6);
+    this._noise(0.035, 0.025 + k * 0.09, 1700 + k * 900);
+    this._beep({ freq: 720 + k * 420, dur: 0.045 + k * 0.045, type: "triangle", gain: 0.035 + k * 0.13, slide: -120 });
   }
 
   cushion(impulse) {
-    const k = Math.min(1, impulse / 5);
-    this._noise(0.07, 0.04 + k * 0.1, 200);
-    this._beep({ freq: 140, dur: 0.08, type: "triangle", gain: 0.04 + k * 0.08 });
+    const k = Math.min(1, impulse / 7);
+    this._noise(0.09, 0.045 + k * 0.13, 180 + k * 120);
+    this._beep({ freq: 105 + k * 45, dur: 0.11, type: "triangle", gain: 0.045 + k * 0.1, slide: -25 });
   }
 
   pocket() {
