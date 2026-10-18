@@ -991,9 +991,9 @@
     top: 50%;
     right: auto;
     bottom: auto;
-    left: max(18px, env(safe-area-inset-left));
+    left: max(12px, env(safe-area-inset-left));
     display: block;
-    width: 116px;
+    width: 168px;
     min-width: 0;
     transform: translateY(-50%);
   }
