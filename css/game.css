@@ -1343,6 +1343,100 @@
   #hud > .mobile-controls-panel .spin-ball { width: 42px !important; height: 42px !important; flex-basis: 42px !important; }
 }
 
+/* Final mobile fit: keep the complete shot dock inside the safe viewport. */
+@media (max-width: 900px) {
+  #hud > .mobile-controls-panel {
+    left: max(6px, env(safe-area-inset-left)) !important;
+    bottom: max(6px, env(safe-area-inset-bottom)) !important;
+    width: clamp(116px, 26vw, 150px) !important;
+    max-height: calc(100dvh - 12px - env(safe-area-inset-top) - env(safe-area-inset-bottom)) !important;
+    overflow: hidden !important;
+  }
+
+  #hud > .mobile-controls-panel .aim-dock {
+    gap: clamp(4px, 1.2vw, 8px) !important;
+    padding: clamp(5px, 1.4vw, 8px) !important;
+    border-radius: 12px !important;
+  }
+
+  #hud > .mobile-controls-panel .spin-dock {
+    min-height: clamp(42px, 10vw, 58px) !important;
+    padding: 2px 4px !important;
+    font-size: clamp(9px, 2.4vw, 12px) !important;
+  }
+
+  #hud > .mobile-controls-panel .spin-ball {
+    width: clamp(36px, 10vw, 48px) !important;
+    height: clamp(36px, 10vw, 48px) !important;
+    flex-basis: clamp(36px, 10vw, 48px) !important;
+  }
+
+  #hud > .mobile-controls-panel .power-heading,
+  #hud > .mobile-controls-panel .cue-elevation {
+    font-size: clamp(9px, 2.5vw, 12px) !important;
+  }
+
+  #hud > .mobile-controls-panel #powerSlider {
+    width: clamp(36px, 9vw, 48px) !important;
+    height: clamp(82px, 21vw, 120px) !important;
+  }
+
+  #hud > .mobile-controls-panel .cue-elevation {
+    gap: 2px !important;
+    margin: 0 !important;
+  }
+
+  #hud > .mobile-controls-panel #cueElevation {
+    min-height: 12px !important;
+  }
+
+  #hud > .mobile-controls-panel .shoot {
+    min-height: clamp(36px, 9vw, 46px) !important;
+    padding: 4px !important;
+    font-size: clamp(10px, 2.7vw, 13px) !important;
+  }
+
+  #hud > .mobile-controls-panel .shoot-icon {
+    display: none !important;
+  }
+}
+
+@media (max-width: 520px) and (orientation: portrait) {
+  #hud > .mobile-controls-panel {
+    width: min(132px, 36vw) !important;
+  }
+
+  #hud > .mobile-controls-panel .aim-dock {
+    gap: 4px !important;
+  }
+
+  #hud > .mobile-controls-panel .power-heading output {
+    padding: 2px 4px !important;
+  }
+}
+
+@media (max-height: 480px) and (orientation: landscape) and (max-width: 900px) {
+  #hud > .mobile-controls-panel {
+    width: clamp(112px, 20vw, 136px) !important;
+  }
+
+  #hud > .mobile-controls-panel .aim-dock {
+    grid-template-columns: 1fr 1fr !important;
+    align-items: center !important;
+  }
+
+  #hud > .mobile-controls-panel .spin-dock,
+  #hud > .mobile-controls-panel .power-control,
+  #hud > .mobile-controls-panel .cue-elevation,
+  #hud > .mobile-controls-panel .shoot {
+    grid-column: 1 / -1 !important;
+  }
+
+  #hud > .mobile-controls-panel #powerSlider {
+    height: 66px !important;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .mobile-controls-panel.open { animation: none; }
 }
