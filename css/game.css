@@ -1437,6 +1437,106 @@
   }
 }
 
+/* Último breakpoint mobile: reserva uma faixa para o painel e outra para o HUD. */
+@media (max-width: 900px) and (orientation: landscape) {
+  #hud > .topbar {
+    position: fixed !important;
+    top: max(8px, env(safe-area-inset-top)) !important;
+    right: max(8px, env(safe-area-inset-right)) !important;
+    left: 184px !important;
+    width: auto !important;
+    height: 58px !important;
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto !important;
+    gap: 6px !important;
+    transform: none !important;
+    z-index: 35 !important;
+  }
+
+  #hud > .topbar .player-card {
+    min-width: 0 !important;
+    height: 58px !important;
+    overflow: hidden !important;
+    padding: 5px 7px !important;
+    border-radius: 13px !important;
+  }
+
+  #hud > .topbar .player-heading {
+    gap: 5px !important;
+  }
+
+  #hud > .topbar .player-avatar {
+    width: 26px !important;
+    height: 26px !important;
+  }
+
+  #hud > .topbar .player-label,
+  #hud > .topbar .meta,
+  #hud > .topbar .ball-rack {
+    font-size: 8px !important;
+  }
+
+  #hud > .topbar .name {
+    font-size: 12px !important;
+  }
+
+  #hud > .topbar .mode-chip {
+    position: fixed !important;
+    top: 72px !important;
+    left: 50% !important;
+    width: 132px !important;
+    min-width: 0 !important;
+    height: 42px !important;
+    padding: 5px 8px !important;
+    transform: translateX(-50%) !important;
+    z-index: 36 !important;
+  }
+
+  #hud > .topbar .header-actions {
+    display: flex !important;
+    gap: 5px !important;
+  }
+
+  #hud > .topbar .header-actions button {
+    width: 40px !important;
+    min-width: 40px !important;
+    height: 42px !important;
+    padding: 0 !important;
+  }
+
+  #hud > .mobile-controls-panel {
+    top: auto !important;
+    right: auto !important;
+    bottom: max(6px, env(safe-area-inset-bottom)) !important;
+    left: max(6px, env(safe-area-inset-left)) !important;
+    width: 142px !important;
+    max-height: calc(100dvh - 12px - env(safe-area-inset-top) - env(safe-area-inset-bottom)) !important;
+  }
+
+  #hud > .mobile-controls-panel .aim-dock {
+    gap: 4px !important;
+    padding: 6px !important;
+  }
+
+  #hud > .mobile-controls-panel .spin-dock {
+    min-height: 48px !important;
+  }
+
+  #hud > .mobile-controls-panel .spin-ball {
+    width: 38px !important;
+    height: 38px !important;
+    flex-basis: 38px !important;
+  }
+
+  #hud > .mobile-controls-panel #powerSlider {
+    height: 76px !important;
+  }
+
+  #hud > .mobile-controls-panel .shoot {
+    min-height: 36px !important;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .mobile-controls-panel.open { animation: none; }
 }
