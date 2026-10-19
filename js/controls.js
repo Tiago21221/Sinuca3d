@@ -111,6 +111,7 @@ export class Controls {
       this._orbitStart = { x: e.clientX, y: e.clientY };
       return;
     }
+    if (e.button !== 0) return;
     this.shiftElevation = e.shiftKey;
     this.draggingAim = true;
     this.aimOnly = e.pointerType === "touch";
@@ -153,22 +154,11 @@ export class Controls {
     this.aimAngle -= dx * 0.006 * sens;
     if (this.aimOnly) return;
     const pull = Math.max(0, e.clientY - this._chargeStartY);
-    if (pull > this.pullDistance) {
-      this.pullDistance = pull;
-      this.power = clamp(0.08 + (pull / 180) * 0.92, 0.08, 1);
-      this.cuePull = Math.min(1, pull / 180) * CUE_MAX_PULL;
-      this.onPowerChange?.(this.power);
-      this.onPullChange?.(this.cuePull);
-    }
-    if (this.pullDistance > 16 && e.clientY < this._chargeStartY + this.pullDistance * 0.55) {
-      this.charging = false;
-      this.draggingAim = false;
-      this.onShoot?.(this.cuePull);
-      this.cuePull = 0;
-      this.cueElevation = 0;
-      this.onPullChange?.(0);
-      this.onElevationChange?.(0);
-    }
+    this.pullDistance = pull;
+    this.power = clamp(0.08 + (pull / 180) * 0.92, 0.08, 1);
+    this.cuePull = Math.min(1, pull / 180) * CUE_MAX_PULL;
+    this.onPowerChange?.(this.power);
+    this.onPullChange?.(this.cuePull);
   }
 
   cancelShot() {
