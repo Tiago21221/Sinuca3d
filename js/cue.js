@@ -132,8 +132,15 @@ export function createAimLine(scene) {
 
   const ghost = new THREE.Mesh(
     new THREE.SphereGeometry(BALL_RADIUS * 0.92, 16, 12),
-    new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.18 })
+    new THREE.MeshBasicMaterial({
+      color: 0xffffff,
+      transparent: true,
+      opacity: 0.22,
+      depthTest: false,
+      depthWrite: false,
+    })
   );
+  ghost.renderOrder = 18;
   ghost.visible = false;
   scene.add(ghost);
 
@@ -174,8 +181,8 @@ export function predictAimPaths(origin, direction, balls, bounds) {
     return Math.max(0, Number.isFinite(distance) ? distance : 0);
   };
   const atDistance = (point, vector, distance) =>
-    new THREE.Vector3(point.x + vector.x * distance, TABLE_HEIGHT + 0.004, point.z + vector.z * distance);
-  const start = new THREE.Vector3(origin.x, TABLE_HEIGHT + 0.004, origin.z);
+    new THREE.Vector3(point.x + vector.x * distance, TABLE_HEIGHT + 0.018, point.z + vector.z * distance);
+  const start = new THREE.Vector3(origin.x, TABLE_HEIGHT + 0.018, origin.z);
   let firstHit = null;
   const diameter = BALL_RADIUS * 2;
   const diameterSquared = diameter * diameter;
@@ -217,6 +224,7 @@ export function predictAimPaths(origin, direction, balls, bounds) {
     target.z + incomingNormal.z * BALL_RADIUS * visibleHorizontal
   );
   const objectEnd = atDistance(target, objectDirection, findExit(target, objectDirection));
+  // Tangent line: after the collision, the cue ball leaves at 90° to the target path.
   const cueDirection = dir.clone().addScaledVector(objectDirection, -dir.dot(objectDirection));
   const cueDeflectionPath = [];
   if (cueDirection.lengthSq() > 0.001) {
