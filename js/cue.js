@@ -77,11 +77,13 @@ export class CueStick {
 
 export function createAimLine(scene) {
   const mat = new THREE.LineDashedMaterial({
-    color: 0xf8f1d0,
-    dashSize: 0.04,
-    gapSize: 0.025,
+    color: 0xfff7c7,
+    dashSize: 0.055,
+    gapSize: 0.018,
     transparent: true,
-    opacity: 0.75,
+    opacity: 0.98,
+    depthTest: false,
+    depthWrite: false,
   });
   const line = new THREE.Line(new THREE.BufferGeometry(), mat);
   line.visible = false;
@@ -91,10 +93,12 @@ export function createAimLine(scene) {
     new THREE.BufferGeometry(),
     new THREE.LineDashedMaterial({
       color: 0xffffff,
-      dashSize: 0.025,
-      gapSize: 0.012,
+      dashSize: 0.04,
+      gapSize: 0.014,
       transparent: true,
-      opacity: 0.95,
+      opacity: 0.98,
+      depthTest: false,
+      depthWrite: false,
     })
   );
   objectLine.visible = false;
@@ -103,11 +107,13 @@ export function createAimLine(scene) {
   const cueDeflectionLine = new THREE.Line(
     new THREE.BufferGeometry(),
     new THREE.LineDashedMaterial({
-      color: 0x70d6d0,
-      dashSize: 0.035,
-      gapSize: 0.02,
+      color: 0x75fff2,
+      dashSize: 0.05,
+      gapSize: 0.016,
       transparent: true,
-      opacity: 0.85,
+      opacity: 0.98,
+      depthTest: false,
+      depthWrite: false,
     })
   );
   cueDeflectionLine.visible = false;
