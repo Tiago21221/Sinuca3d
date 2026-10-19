@@ -123,10 +123,18 @@ export function createAimLine(scene) {
   scene.add(cueDeflectionLine);
 
   const contactMarker = new THREE.Mesh(
-    new THREE.SphereGeometry(0.018, 16, 12),
-    new THREE.MeshBasicMaterial({ color: 0xe32636, depthTest: false })
+    new THREE.RingGeometry(0.028, 0.038, 24),
+    new THREE.MeshBasicMaterial({
+      color: 0xffd166,
+      transparent: true,
+      opacity: 0.9,
+      side: THREE.DoubleSide,
+      depthTest: false,
+      depthWrite: false,
+    })
   );
-  contactMarker.renderOrder = 2;
+  contactMarker.rotation.x = -Math.PI / 2;
+  contactMarker.renderOrder = 22;
   contactMarker.visible = false;
   scene.add(contactMarker);
 
@@ -135,7 +143,8 @@ export function createAimLine(scene) {
     new THREE.MeshBasicMaterial({
       color: 0xffffff,
       transparent: true,
-      opacity: 0.22,
+      opacity: 0.38,
+      wireframe: true,
       depthTest: false,
       depthWrite: false,
     })
@@ -225,7 +234,7 @@ export function predictAimPaths(origin, direction, balls, bounds) {
 
   return {
     cuePath: [start, impact],
-    objectPath: [impact, target, objectEnd],
+    objectPath: [target, objectEnd],
     cueDeflectionPath,
     contact: impact,
     targetSpot: ghostCenter,
