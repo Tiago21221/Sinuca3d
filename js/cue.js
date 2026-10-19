@@ -86,21 +86,23 @@ export function createAimLine(scene) {
     depthWrite: false,
   });
   const line = new THREE.Line(new THREE.BufferGeometry(), mat);
+  line.renderOrder = 19;
   line.visible = false;
   scene.add(line);
 
   const objectLine = new THREE.Line(
     new THREE.BufferGeometry(),
     new THREE.LineDashedMaterial({
-      color: 0xffffff,
-      dashSize: 0.04,
-      gapSize: 0.014,
+      color: 0xffc857,
+      dashSize: 0.09,
+      gapSize: 0.025,
       transparent: true,
       opacity: 0.98,
       depthTest: false,
       depthWrite: false,
     })
   );
+  objectLine.renderOrder = 20;
   objectLine.visible = false;
   scene.add(objectLine);
 
@@ -116,6 +118,7 @@ export function createAimLine(scene) {
       depthWrite: false,
     })
   );
+  cueDeflectionLine.renderOrder = 21;
   cueDeflectionLine.visible = false;
   scene.add(cueDeflectionLine);
 
