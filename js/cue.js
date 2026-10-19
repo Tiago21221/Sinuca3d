@@ -184,8 +184,9 @@ export function predictAimPaths(origin, direction, balls, bounds) {
     new THREE.Vector3(point.x + vector.x * distance, TABLE_HEIGHT + 0.018, point.z + vector.z * distance);
   const start = new THREE.Vector3(origin.x, TABLE_HEIGHT + 0.018, origin.z);
   let firstHit = null;
-  const diameter = BALL_RADIUS * 2;
-  const diameterSquared = diameter * diameter;
+  // Use a small visual tolerance so the guide locks onto the ball the player sees.
+  const hitDiameter = BALL_RADIUS * 2.35;
+  const diameterSquared = hitDiameter * hitDiameter;
 
   for (const ball of balls) {
     if (ball.number === 0) continue;
@@ -195,7 +196,7 @@ export function predictAimPaths(origin, direction, balls, bounds) {
     if (projection <= 0) continue;
     const perpendicularSquared = relX * relX + relZ * relZ - projection * projection;
     if (perpendicularSquared >= diameterSquared) continue;
-    const distance = projection - Math.sqrt(diameterSquared - perpendicularSquared);
+      const distance = Math.max(0, projection - Math.sqrt(diameterSquared - perpendicularSquared));
     if (distance >= 0 && (!firstHit || distance < firstHit.distance)) {
       firstHit = { ball, distance };
     }
