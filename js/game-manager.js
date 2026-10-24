@@ -184,12 +184,12 @@ export class GameManager {
     this.ui.cueElevation,
     this.ui.spin
   );
-      const aimEnabled = this.config?.aimAssist ?? this.settings.aimAssist;
-      updateAimLine(
-        this.aimHelpers,
-        cueMesh.position,
-        dir,
-        aiming && aimEnabled,
+        // Keep the trajectory visible while aiming so the player can line up the shot.
+        updateAimLine(
+          this.aimHelpers,
+          cueMesh.position,
+          dir,
+          aiming,
         [...this.physics.bodies.entries()].map(([number, body]) => ({
           number,
           x: body.position.x,

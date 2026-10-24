@@ -77,54 +77,79 @@ export class CueStick {
 
 export function createAimLine(scene) {
   const mat = new THREE.LineDashedMaterial({
-    color: 0xf8f1d0,
-    dashSize: 0.04,
-    gapSize: 0.025,
+    color: 0xfff7c7,
+    dashSize: 0.055,
+    gapSize: 0.018,
     transparent: true,
-    opacity: 0.75,
+    opacity: 0.98,
+    depthTest: false,
+    depthWrite: false,
   });
   const line = new THREE.Line(new THREE.BufferGeometry(), mat);
+  line.renderOrder = 19;
   line.visible = false;
   scene.add(line);
 
   const objectLine = new THREE.Line(
     new THREE.BufferGeometry(),
     new THREE.LineDashedMaterial({
-      color: 0xffffff,
-      dashSize: 0.025,
-      gapSize: 0.012,
+      color: 0xffc857,
+      dashSize: 0.09,
+      gapSize: 0.025,
       transparent: true,
-      opacity: 0.95,
+      opacity: 0.98,
+      depthTest: false,
+      depthWrite: false,
     })
   );
+  objectLine.renderOrder = 20;
   objectLine.visible = false;
   scene.add(objectLine);
 
   const cueDeflectionLine = new THREE.Line(
     new THREE.BufferGeometry(),
     new THREE.LineDashedMaterial({
-      color: 0x70d6d0,
-      dashSize: 0.035,
-      gapSize: 0.02,
+      color: 0x75fff2,
+      dashSize: 0.05,
+      gapSize: 0.016,
       transparent: true,
-      opacity: 0.85,
+      opacity: 0.98,
+      depthTest: false,
+      depthWrite: false,
     })
   );
+  cueDeflectionLine.renderOrder = 21;
   cueDeflectionLine.visible = false;
   scene.add(cueDeflectionLine);
 
   const contactMarker = new THREE.Mesh(
-    new THREE.SphereGeometry(0.007, 16, 12),
-    new THREE.MeshBasicMaterial({ color: 0xe32636, depthTest: false })
+    new THREE.RingGeometry(0.028, 0.038, 24),
+    new THREE.MeshBasicMaterial({
+      color: 0xffd166,
+      transparent: true,
+      opacity: 0.9,
+      side: THREE.DoubleSide,
+      depthTest: false,
+      depthWrite: false,
+    })
   );
-  contactMarker.renderOrder = 2;
+  contactMarker.rotation.x = -Math.PI / 2;
+  contactMarker.renderOrder = 22;
   contactMarker.visible = false;
   scene.add(contactMarker);
 
   const ghost = new THREE.Mesh(
     new THREE.SphereGeometry(BALL_RADIUS * 0.92, 16, 12),
-    new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.18 })
+    new THREE.MeshBasicMaterial({
+      color: 0xffffff,
+      transparent: true,
+      opacity: 0.38,
+      wireframe: true,
+      depthTest: false,
+      depthWrite: false,
+    })
   );
+  ghost.renderOrder = 18;
   ghost.visible = false;
   scene.add(ghost);
 
@@ -153,66 +178,58 @@ export function updateAimLine(helpers, origin, dir, show, balls = [], bounds = n
 }
 
 export function predictAimPaths(origin, direction, balls, bounds) {
-  const dir = new THREE.Vector3(direction.x, 0, direction.z).normalize();
-  const halfLength = bounds.halfLength - BALL_RADIUS;
-  const halfWidth = bounds.halfWidth - BALL_RADIUS;
-  const findExit = (point, vector) => {
-    let distance = Infinity;
-    if (vector.x > 1e-8) distance = Math.min(distance, (halfLength - point.x) / vector.x);
-    else if (vector.x < -1e-8) distance = Math.min(distance, (-halfLength - point.x) / vector.x);
-    if (vector.z > 1e-8) distance = Math.min(distance, (halfWidth - point.z) / vector.z);
-    else if (vector.z < -1e-8) distance = Math.min(distance, (-halfWidth - point.z) / vector.z);
-    return Math.max(0, Number.isFinite(distance) ? distance : 0);
+  const dir = new THREE.Vector3(direction.x, 0, direction.z);
+  if (dir.lengthSq() < 0.0001) return emptyAimPaths(origin);
+  dir.normalize();
+
+  const halfLength = Math.max(0.1, bounds.halfLength - BALL_RADIUS);
+  const halfWidth = Math.max(0.1, bounds.halfWidth - BALL_RADIUS);
+  const y = TABLE_HEIGHT + 0.035;
+  const pointAt = (point, vector, distance) =>
+    new THREE.Vector3(point.x + vector.x * distance, y, point.z + vector.z * distance);
+  const distanceToRail = (point, vector) => {
+    const distances = [];
+    if (vector.x > 0.0001) distances.push((halfLength - point.x) / vector.x);
+    if (vector.x < -0.0001) distances.push((-halfLength - point.x) / vector.x);
+    if (vector.z > 0.0001) distances.push((halfWidth - point.z) / vector.z);
+    if (vector.z < -0.0001) distances.push((-halfWidth - point.z) / vector.z);
+    return Math.max(0.1, Math.min(...distances.filter(Number.isFinite)));
   };
-  const atDistance = (point, vector, distance) =>
-    new THREE.Vector3(point.x + vector.x * distance, TABLE_HEIGHT + 0.004, point.z + vector.z * distance);
-  const start = new THREE.Vector3(origin.x, TABLE_HEIGHT + 0.004, origin.z);
+  const start = new THREE.Vector3(origin.x, y, origin.z);
+  const hitRadius = BALL_RADIUS * 1.12;
   let firstHit = null;
-  const diameter = BALL_RADIUS * 2;
-  const diameterSquared = diameter * diameter;
 
   for (const ball of balls) {
     if (ball.number === 0) continue;
-    const relX = ball.x - start.x;
-    const relZ = ball.z - start.z;
-    const projection = relX * dir.x + relZ * dir.z;
+    const toBall = new THREE.Vector3(ball.x - start.x, 0, ball.z - start.z);
+    const projection = toBall.dot(dir);
     if (projection <= 0) continue;
-    const perpendicularSquared = relX * relX + relZ * relZ - projection * projection;
-    if (perpendicularSquared >= diameterSquared) continue;
-    const distance = projection - Math.sqrt(diameterSquared - perpendicularSquared);
-    if (distance >= 0 && (!firstHit || distance < firstHit.distance)) {
-      firstHit = { ball, distance };
-    }
+    const closest = toBall.clone().addScaledVector(dir, -projection);
+    const missDistance = closest.length();
+    if (missDistance > hitRadius) continue;
+    const alongHit = projection - Math.sqrt(Math.max(0, hitRadius * hitRadius - missDistance * missDistance));
+    if (!firstHit || alongHit < firstHit.distance) firstHit = { ball, distance: alongHit };
   }
 
-  const endDistance = findExit(start, dir);
-  if (!firstHit || firstHit.distance > endDistance) {
-    return {
-      cuePath: [start, atDistance(start, dir, endDistance)],
-      objectPath: [],
-      cueDeflectionPath: [],
-      contact: null,
-      targetSpot: null,
-    };
+  const railDistance = distanceToRail(start, dir);
+  if (!firstHit || firstHit.distance >= railDistance) {
+    return { cuePath: [start, pointAt(start, dir, railDistance)], objectPath: [], cueDeflectionPath: [], contact: null, targetSpot: null };
   }
 
-  const impact = atDistance(start, dir, firstHit.distance);
-  const target = new THREE.Vector3(firstHit.ball.x, TABLE_HEIGHT + 0.004, firstHit.ball.z);
-  const objectDirection = new THREE.Vector3(target.x - impact.x, 0, target.z - impact.z).normalize();
-  const incomingNormal = new THREE.Vector3(impact.x - target.x, 0, impact.z - target.z).normalize();
-  const visibleHeight = 0.72;
-  const visibleHorizontal = Math.sqrt(1 - visibleHeight * visibleHeight);
-  const targetSpot = new THREE.Vector3(
-    target.x + incomingNormal.x * BALL_RADIUS * visibleHorizontal,
-    TABLE_HEIGHT + BALL_RADIUS + BALL_RADIUS * visibleHeight,
-    target.z + incomingNormal.z * BALL_RADIUS * visibleHorizontal
-  );
-  const objectEnd = atDistance(target, objectDirection, findExit(target, objectDirection));
-  const cueDirection = dir.clone().addScaledVector(objectDirection, -dir.dot(objectDirection));
+  const impact = pointAt(start, dir, firstHit.distance);
+  const target = new THREE.Vector3(firstHit.ball.x, y, firstHit.ball.z);
+  const targetDirection = new THREE.Vector3(target.x - impact.x, 0, target.z - impact.z).normalize();
+  const approachNormal = dir.clone().negate();
+  const ghostCenter = target.clone().addScaledVector(approachNormal, BALL_RADIUS * 2);
+  ghostCenter.y = TABLE_HEIGHT + BALL_RADIUS;
+  const objectEnd = pointAt(target, targetDirection, distanceToRail(target, targetDirection));
+
+  // The cue ball's natural post-contact path is the 90-degree tangent.
+  const tangent = targetDirection.clone().multiplyScalar(-dir.dot(targetDirection)).addScaledVector(dir, 0.01);
   const cueDeflectionPath = [];
-  if (cueDirection.lengthSq() > 0.001) {
-    cueDirection.normalize();
-    cueDeflectionPath.push(impact, atDistance(impact, cueDirection, findExit(impact, cueDirection)));
+  if (tangent.lengthSq() > 0.0001) {
+    tangent.normalize();
+    cueDeflectionPath.push(impact, pointAt(impact, tangent, distanceToRail(impact, tangent)));
   }
 
   return {
@@ -220,8 +237,13 @@ export function predictAimPaths(origin, direction, balls, bounds) {
     objectPath: [target, objectEnd],
     cueDeflectionPath,
     contact: impact,
-    targetSpot,
+    targetSpot: ghostCenter,
   };
+}
+
+function emptyAimPaths(origin) {
+  const point = new THREE.Vector3(origin.x, TABLE_HEIGHT + 0.035, origin.z);
+  return { cuePath: [point, point.clone().add(new THREE.Vector3(0, 0, 0.1))], objectPath: [], cueDeflectionPath: [], contact: null, targetSpot: null };
 }
 
 function clamp(value, min, max) {

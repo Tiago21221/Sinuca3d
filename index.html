@@ -66,7 +66,7 @@
               <small class="keyboard-hint" data-i18n="keyboardHelp"></small>
             </div>
           </div>
-          <div class="cam-dock" aria-label="Controles da câmera">
+          <div class="cam-dock" id="cameraControlsPanel" aria-label="Controles da câmera" hidden>
             <div class="fine-aim" aria-label="Ajuste fino da mira">
               <button type="button" data-aim-fine="left" aria-label="Mover mira para a esquerda" title="Mira esquerda">‹</button>
               <span aria-hidden="true">MIRA</span>
@@ -84,9 +84,12 @@
           <button class="mobile-controls-toggle gold" type="button" data-controls-toggle aria-expanded="false" aria-controls="mobileControlsPanel">
             <span aria-hidden="true">☷</span><span data-i18n="controls">Controles</span>
           </button>
-          <button class="mobile-fullscreen-btn ghost" type="button" data-fullscreen aria-label="Tela cheia" title="Tela cheia" aria-pressed="false">
-            <span aria-hidden="true">⛶</span>
-          </button>
+  <button class="mobile-camera-toggle ghost" type="button" data-camera-toggle aria-expanded="false" aria-controls="cameraControlsPanel" aria-label="Abrir controles da câmera" title="Câmera">
+  <span aria-hidden="true">⌖</span><span>Câmera</span>
+  </button>
+  <button class="mobile-fullscreen-btn ghost" type="button" data-fullscreen aria-label="Tela cheia" title="Tela cheia" aria-pressed="false">
+  <span aria-hidden="true">⛶</span>
+  </button>
         </div>
         <div class="place-dock" id="placeDock" hidden>
           <small data-i18n="ballInHand">Bola na mão</small>

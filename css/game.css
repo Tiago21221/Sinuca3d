@@ -471,10 +471,36 @@
 }
 
 /* No mobile, a mesa recebe os gestos; o painel mostra apenas força, ângulo e efeito. */
+@media (min-width: 901px) {
+  #cameraControlsPanel[hidden] { display: grid !important; }
+  .mobile-camera-toggle { display: none !important; }
+}
+
 @media (max-width: 900px) {
-  .cam-dock,
+  .cam-dock { display: none !important; }
   .mobile-controls-actions {
+    display: flex !important;
+    gap: 6px;
+  }
+  .mobile-controls-actions .mobile-camera-toggle {
+    display: inline-flex;
+    min-height: 42px;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    padding: 0 12px;
+    border: 1px solid rgba(214,183,112,.35);
+    border-radius: 11px;
+    color: var(--ink);
+    background: rgba(12, 25, 18, .92);
+    font-size: .68rem;
+  }
+  #cameraControlsPanel[hidden] {
     display: none !important;
+  }
+
+  #cameraControlsPanel:not([hidden]) {
+    display: grid !important;
   }
 
   .mobile-controls-panel {

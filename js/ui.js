@@ -70,6 +70,15 @@ export class UI {
         const panel = this.root.querySelector("#mobileControlsPanel");
         this._setMobileControlsOpen(!panel?.classList.contains("open"));
       }
+      const cameraToggle = e.target.closest("[data-camera-toggle]");
+      if (cameraToggle) {
+        const cameraPanel = this.root.querySelector("#cameraControlsPanel");
+        const isOpen = cameraPanel?.hidden ?? true;
+        if (cameraPanel) cameraPanel.hidden = !isOpen;
+        cameraToggle.setAttribute("aria-expanded", String(isOpen));
+        cameraToggle.setAttribute("aria-label", isOpen ? "Fechar controles da câmera" : "Abrir controles da câmera");
+        return;
+      }
       const shoot = e.target.closest("[data-shoot]");
       if (shoot) this.game?.shoot();
       const historyToggle = e.target.closest("[data-history-toggle]");
