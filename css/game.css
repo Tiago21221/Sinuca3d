@@ -472,9 +472,10 @@
 
 /* No mobile, a mesa recebe os gestos; o painel mostra apenas força, ângulo e efeito. */
 @media (min-width: 901px) {
-  #cameraControlsPanel[hidden] { display: grid !important; }
+  #hud #cameraControlsPanel,
+  #hud #cameraControlsPanel[hidden],
   #hud .mobile-camera-toggle,
-  .mobile-controls-actions .mobile-camera-toggle {
+  #hud .mobile-controls-actions .mobile-camera-toggle {
     display: none !important;
     visibility: hidden !important;
     pointer-events: none !important;
